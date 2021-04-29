@@ -22,37 +22,39 @@ class RMLDO{
 	var 	  $opp			= '==';
 
 	function __construct($input, array $args=array()){
-		$input = $this->input_init($data, $args);
 		foreach ($this->user_args as $arg_key=>$prop){ 
 				if(isset($args[$arg_key])){
 					$this->$prop = $args[$arg_key];
 				}
 		}
-		$this->set_theData($input);
 	    if (isset($args['map'])  && is_array($args['map'])) {$this->mapColsTo($args['map']);}
+		$this->data_init($input, $args);
 	}
 	
-	protected function input_init($input, $args =array()){
+	protected function data_init($input, $args =array()){
  		if(is_string($input) && isset($args['dbh'])){
 			$dbh =$args['dbh'];
 			$stmt = false;
-			if (!($dbh instanceof PDO )){
+			if (!($dbh instanceof PDO)){
 				if (is_string($dbh)){ $dbh = explode(',', $dbh);}
 				if(is_array($dbh)){
 					$dbname = array_unshift($dbh) ;
-					$dbconn = $dbh ? array_unshift($dbh) : '_default';
+					$dbconn = $dbh ? array_unshift($dbh) : (isset($args['dbi']) && is_string($args['dbi'])) ? $args['dbi'] : '_default';
 					$dbh = DB_hub::connect($dbname,$dbconn);
 				}else{
 					$dbh = false;
 				}
 			}
-			if($dbh){
+ 			if($dbh){
 				$input =trim($input);
 				if (substr($input, 0,7) === 'SELECT '){
 					$stmt = new DB_query($input,  $dbh);
-				}
+ 				}
 			}
 			if ($stmt) { $input=$stmt;}
+		}
+		if($input instanceof DB_query)  {
+			$input = $input->STMNT();
 		}
 		if($input instanceof PDOStatement){
 			$this->_STMNTobj = $input;
@@ -63,8 +65,7 @@ class RMLDO{
 	 		}
 			$input = $this->tryFetch();
 		}
-		
-		return $input;
+ 		$this->set_theData($input);
 	}
 	
 	protected function tryFetch(){
