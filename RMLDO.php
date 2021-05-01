@@ -465,13 +465,13 @@ class RMLDO{
 		return ($this->_pointer == 0);
 	}
 	function isLast(){
-		return ($this->_pointer == $this->_theSize-1);
+		return ($this->_pointer === $this->_theSize-1);
 	}
 	function isSingle(){ 
-		return ($this->_theSize == 1);
+		return ($this->_theSize === 1);
 	}
 	function isEmpty(){ 
-		return ($this->_theSize == 0);
+		return empty($this->_theData);
 	}
  	function table(){ 
 			return $this->_table;
@@ -677,6 +677,6 @@ class RMLDO{
  		return  $SQL;
 	}	
  }
-
+ 
 
 ?>

@@ -1,0 +1,1 @@
+define ('APPLY_SC', false);
