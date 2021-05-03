@@ -32,8 +32,12 @@ class RMLDO{
 	}
 	
 	protected function data_init($input, $args =array()){
- 		if(is_string($input) && isset($args['dbh'])){
-			$dbh =$args['dbh'];
+ 		if(is_string($input)){
+	 		if(isset($args['dbh'])){  $dbh = $args['dbh']; }
+	 		else{ 
+		 		$dbh = new DB( DBNAME , UACC  ,  UPASS ,  HOST ); 
+		 		$dbh = $dbh->connect();
+		 	}
 			$stmt = false;
 			if (!($dbh instanceof PDO)){
 				if (is_string($dbh)){ $dbh = explode(',', $dbh);}
@@ -59,7 +63,7 @@ class RMLDO{
 		if($input instanceof PDOStatement){
 			$this->_STMNTobj = $input;
 			$this->setTable();
- 			if ($this->_STMNTobj->errorCode() === ''){ 
+ 			if ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000'){ 
 				$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
 	 			$this->_STMNTobj->execute($vars);
 	 		}
@@ -678,5 +682,18 @@ class RMLDO{
 	}	
  }
  
-
+ include ('basic db-4.php');  ECHO 'MMMMM!!!<HR>';
+ $test = new RMLDO( 'SELECT * FROM Categories WHERE CatPub =? and Parent = :?',array ('vars'=>array(1,0)));
+ $datax[] =array('x'=>1,'y'=>true,'z'=>'some string', 'a'=>array(1,2,3));
+ $datax[] =array('x'=>2,'y'=>false,'z'=>'s string', 'a'=>array(10,5,3));
+ $datax[] =array('x'=>3,'y'=>true,'z'=>'some string', 'a'=>array(11,2,33));
+ $datax[] =array('x'=>4,'y'=>false,'z'=>'some string', 'a'=>array(1,2,3));
+ $datax[] =array('x'=>5,'y'=>true,'z'=>'  string', 'a'=>array(1,2,3));
+ $test2 = new RMLDO( $datax);
+  var_dump($test->thisRow(), $test->thisRow());
+  echo $test2->the_('z','<b>','</b>',array( 'offs'=>-1,'loop'=>true));
+  
+  //added deafult connection object
+  //fixed errorCode === '' value (5b)
+  // moved settings
 ?>
