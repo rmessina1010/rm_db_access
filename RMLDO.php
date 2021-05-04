@@ -258,6 +258,7 @@ class RMLDO{
  		$fxo= isset($auxArgs['fxo']) 			? ($auxArgs['fxo'])  	: false ; //offset as fixed index
 		$loop= isset($args['loop']) ? ($args['loop'] ? true: false) : false;
 		$shortCode=isset($args['sc'])  ? $args['sc'] : null; 
+		$echo =isset($args['ec'])  ? ($args['ec']) : false; 
 		$mapped=isset($args['map'])  ? $args['map'] : ($this->_keyMap ? false : true);
 		$filt= (isset($auxArgs['filt']) && isset($auxArgs['filt']))    ? $auxArgs['filt']  : array();
 		$filtArgs= (isset($auxArgs['fArgs']) && isset($auxArgs['fArgs']))    ? $auxArgs['fArgs']  : array();
@@ -277,6 +278,7 @@ class RMLDO{
 			if( trim($bef) !=='' || trim($aft) !=='') { $value = $bef.$value.$aft;}
 		}
 		if ( is_array($filt) &&  $filt) { $value = $this->run_filters( $value, $filt,$filtArgs);}
+		if ($echo) { echo $value;}
 		return $value;
 	}
 	
