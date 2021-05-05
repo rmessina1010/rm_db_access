@@ -751,16 +751,4 @@ class RMLDO{
 	}
 }
 
-	function rm_ph_replace($str, array $data=array(),$o='{{',$c='}}' ){ // lite version of insertFromField()
-		  $firstDel=strstr($str, $o);
-		  if ( $firstDel=== false || strstr($str, $c) <= $firstDel){return $str;}
-		  $o= (strpos($o.$o,"#") !== false) ? str_replace("#", "\#", $o) : $o;
-		  $c= (strpos($c.$c,"#") !== false) ? str_replace("#", "\#", $c) : $c;
-		  $regex='#'.$o.'([\w-@\#\$\!\|&~\^\+\*\\\/]*)'.$c.'#';
-  		  preg_match_all($regex, $str, $holders);
-		  foreach ($holders[1] as $k=>$v){  
-			  if (isset($data[$holders[1][$k]])) { $str=str_replace($holders[0][$k], $data[$holders[1][$k]] ,$str );}
-		  }
-		  return $str;
- 	}
- 	?>
+?>
