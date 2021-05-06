@@ -375,7 +375,7 @@ class RMLDO{
 		$key = (isset($cheker['k'])) ? $cheker['k'] : $this->check1 ;
 		$val = (isset($cheker['v'])) ? $cheker['v'] : $this->check2 ;
 		$opp = (isset($cheker['o'])) ? $cheker['o'] : $this->opp ;
-		if (RM_compare($line[$key],$val,$opp)){ return ($line & 1);}
+		if (rm_compare($line[$key],$val,$opp)){ return ($line & 1);}
 		return false;
 	}
 	
@@ -411,7 +411,7 @@ class RMLDO{
 		 if(is_array($args)){
 			$chkey=$check2=$cond=$neg=false;
 			extract($this->getCheckVals($args));
-			$eval=RM_compare($this->_the($chkey),$check2,$cond);
+			$eval=rm_compare($this->_the($chkey),$check2,$cond);
 			if (!($eval xor $neg)){ return;}
 		 }
 		 return $foo($this, $this->_TheData[$pointer],$fooArgs,$meta,$output, $loop,$xtra);
@@ -431,7 +431,7 @@ class RMLDO{
 			if ($cond){
 				if ($chval ==='____'   && $mode == 'rel') {	 $check2 = $output ;}
 				elseif ($chkOffset ||  $chkOffset === 0  || $chkOffset ==='0') {$check2 = $this->_the($chval,'','',$chkOffset,$chkLoop, false) ;}
-				$eval=RM_compare($this->_the($chkey),$check2,$cond);
+				$eval=rm_compare($this->_the($chkey),$check2,$cond);
 				if (!($eval xor $neg)){ continue;}
 			}
 			if ($move !== null) {$this->_pointer = $i;}
@@ -694,9 +694,42 @@ class RMLDO{
 		}		
  		return  $SQL;
 	}	
- }
- 
- function  RM_compare($a,$b=true,$op='==',$N=0){
+		
+	//// Added Aug. 2020
+	function retrieve_row ( $at, array $addTo = array(),  array $aux_args=array()){
+		$loop = isset($aux_args['loop']) ? ($aux_args['loop'])  : false;
+		$offset = isset($aux_args['off'])? ($aux_args['off'])   : false;
+		$only= isset($aux_args['only'])  ? ($aux_args['only'])  : false;
+		$no_sc= isset($aux_args['nosc']) ? ($aux_args['nosc'])  : false;
+		$map_to= isset($aux_args['map']) ? ($aux_args['map'])  : false;
+  		$key = ($offset || $at === null) ?  $this->_pointer + $at :  $at ;   		
+		$key = $this->theLoop($key,$loop);
+		if (!isset($this->_TheData[$key])){ return array(); }
+ 		$loopThrough =  $only ? $addTo : $this->_TheData[$key];
+ 		if (!$no_sc && !$only) { return $loopThrough;}
+ 		$ROW=array();
+ 		foreach ($loopThrough as $col=>$val){
+	 		$col = $this->_keyMapCol($col,$map_to);
+	 		if (isset($this->_TheData[$key][$col])){
+		 		if (isset($addTo[$col]['false']) && $ROW[$col] === false){ $ROW[$col]= $addTo[$col]['false'];}
+		 		if (isset($addTo[$col]['true'])  && $ROW[$col] === true){ $ROW[$col]= $addTo[$col]['true'];}
+		 		if (is_scalar($ROW[$col]) && trim($ROW[$col]) !== '' ){
+		 			$sc_args= isset($addTo[$col]['sca']) ?  $addTo[$col]['sca'] : array();
+		 			$ROW[$col] = $no_sc ? $this->_TheData[$key][$col] : $this->run_sc($this->_TheData[$key][$col], $sc_args);
+		 			if (isset($addTo[$col]['aft'])){ $ROW[$col] =  $ROW[$col].$addTo[$col]['aft'];}
+		 			if (isset($addTo[$col]['bef'])){ $ROW[$col] =  $addTo[$col]['bef'].$ROW[$col];}
+		 		}
+		 		if (isset($addTo[$col]['filt']) && is_array($addTo[$col]['filt'])) {
+			 		$filtArgs = (isset($addTo[$col]['flta']) && is_array($addTo[$col]['flta'])) ? $addTo[$col]['flta'] : array(); 
+			 		$ROW[$col]  = $this->run_filters($ROW[$col], $addTo[$col]['filt'],$filtArgs);
+			 	}
+	 		}
+  		}
+  		return $ROW;
+  	}
+}	
+ 	
+function  rm_compare($a,$b=true,$op='==',$N=0){
 	switch ($op){
 			case 'prm':
 				return  ($b) ? (pow(2, $a)%$a == 2) : 	!(pow(2, $a)%$a == 2); 
@@ -750,5 +783,4 @@ class RMLDO{
 				return  ($a==$b);
 	}
 }
-
 ?>
