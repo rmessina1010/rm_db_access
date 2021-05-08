@@ -10,8 +10,10 @@ class RMLDO{
 	protected $_table 		= false;
 	protected $_pKey		= false;
 	protected $_keyMap_inv	= false;
-	protected $user_args	= array('sc'=>'apply_sc', 'ck1'=>'check1', 'ck2'=>'check2', 'opp'=>'opp',  'ndt'=>'indent', 'lp'=>'loop');
-	
+	protected $user_args	= array('sc'=>'apply_sc', 'ck1'=>'check1', 'ck2'=>'check2', 'opp'=>'opp',  'ndt'=>'indent', 'lp'=>'loop', 'ndx'=>'_indexKey');
+ 	protected $_indexMap 	= null;   	// added sept 2020
+  	protected $_indexKey 	= null;  	// added sept 2020
+  	
 	protected $_keyMap		= false;
 	protected $_hlev		= 0;
 	var		  $loop 		= false;
@@ -62,7 +64,7 @@ class RMLDO{
 		}
 		if($input instanceof PDOStatement){
 			$this->_STMNTobj = $input;
-			$this->setTable();
+			$this->setTable($this->_indexKey);
  			if ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000'){ 
 				$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
 	 			$this->_STMNTobj->execute($vars);
@@ -181,14 +183,20 @@ class RMLDO{
 		}
 		return $this->_TheData;
  	}
-	function alter($key, $val , $offset=false){
-		$index = $offset ?   $this->_pointer + $offset : $this->_pointer ;
- 		if (isset($this->_TheData[$index][$key])){  $this->_TheData[$index][$key] = $val;}
+	function alter($key, $val , $at =null, $offset=false,$loop=null){  ////
+		$index = $this->indexHandler($at, $offset, $loop);
+ 		if (isset($this->_TheData[$index][$key])){  
+	 		$this->_TheData[$index][$key] = $val;
+	 		if ($this->_indexKey === $key){ updateIndex($this->_indexKey,$val);}
+	 	}
  	}
-	function alterRow(array $row , $offset=false){
-		$index = $offset ?   $this->_pointer + $offset : $this->_pointer ;
+	function alterRow(array $row , $at =null, $offset=false,$loop=null){  /////
+		$index = $this->indexHandler($at, $offset, $loop);
 		foreach ($row as $key => $val){
-		 	if (isset($this->_TheData[$index][$key])){  $this->_TheData[$index][$key] = $val;}
+		 	if (isset($this->_TheData[$index][$key])){  
+			 	$this->_TheData[$index][$key] = $val;
+			 	if ($this->_indexKey === $key){ updateIndex($this->_indexKey,$val);}
+			}
 		}
  	}
  	function Q(){ 
@@ -263,25 +271,32 @@ class RMLDO{
 	function columns(){
 		return $this->_columns;
 	}
-	
-	function the_( $key,$bef='',$aft='', array $args =array()){
-		if ($bef === null){ $offset = $aft ? $aft  : 0; }
-		else{ $offset= isset($args['offs']) ? $args['offs'] :0 ;}
- 		$fxo= isset($auxArgs['fxo']) 			? ($auxArgs['fxo'])  	: false ; //offset as fixed index
-		$loop= isset($args['loop']) ? ($args['loop'] ? true: false) : false;
+	 
+	function the_( $key,$bef='',$aft='', $args =array()){///
+		if (!is_array($args)){ 
+			$offset = $args ; 
+			$args =array();
+		}
+		else{ $offset= array_key_exists('offs', $args)  ? $args['offs'] : false ;}
+ 		$fxo= (array_key_exists('fxo', $args) && !$offset ) ?  $args['fxo'] : null ; //offset as fixed index
+		$loop= isset($args['loop']) && $args['loop'] ?  true : false;
 		$shortCode=isset($args['sc'])  ? $args['sc'] : null; 
-		$echo =isset($args['ec'])  ? $args['ec']  : false; 
+		$echo =isset($args['ec']) && $args['ec'] ?   true : false; 
 		$mapped=isset($args['map'])  ? $args['map'] : ($this->_keyMap ? false : true);
-		$filt= (isset($auxArgs['filt']) && isset($auxArgs['filt']))    ? $auxArgs['filt']  : array();
-		$filtArgs= (isset($auxArgs['fArgs']) && isset($auxArgs['fArgs']))    ? $auxArgs['fArgs']  : array();
+		$filt= (isset($args['filt']) && isset($args['filt']))    ? $args['filt']  : array();
+		$filtArgs= (isset($args['fArgs']) && isset($args['fArgs']))    ? $args['fArgs']  : array();
+		$bef = isset($args['bef']) ? $args['bef'] : $bef;
+		$aft = isset($args['aft']) ? $args['aft'] : $aft;
 		$argsForSC=array();
         if (is_array($shortCode)){ 
 	        $argsForSC = $shortCode; 
 	        $shortCode = true;
 	    }
 		$shortCode = ($shortCode !== NULL)  ? $shortCode : $this->apply_sc;  // user varable or (if NULL) instance default
-		$theRow =  $fxo ? $ofst : $this->_pointer+$offset;
-		$theRow =  $this->theLoop($theRow,$loop);
+		
+		//$theRow =  $fxo ? $ofst : $this->_pointer+$offset;
+		//$theRow =  $this->theLoop($theRow,$loop);
+ 		$theRow = ($fxo !== null) ? $this->indexHandler($fxo, $offset, $loop) : $this->theLoop($this->_pointer+$offset, $loop);
 		$key = $this->_keyMapCol($key,$mapped);
 		$value=isset($this->_TheData[$theRow][$key]) ? $this->_TheData[$theRow][$key] : NULL;
 		if ($bef === null){ return $value; }
@@ -322,10 +337,12 @@ class RMLDO{
  		return $this->thisRow($omit,$map,$sc);
 	}
 	
-	function getRow($at=null, $offset = false, $loop =NULL , $move = false, $map=false, array $omit=array(), $sc=false){
-		if ($at === null) {  $at =  $this->_pointer;} 
+	function getRow($at=null, $offset = false, $loop =NULL , $move = false, $map=false, array $omit=array(), $sc=false){ ////
+		/**if ($at === null) {  $at =  $this->_pointer;} 
  		$key = ($offset) ?  $this->_pointer + $at : $at;  // if offset-mode, add att to pointer
 		$key = $this->theLoop($key,$loop);
+		**/
+		$key = $this->indexHandler($at,$offset, $loop);
 		if (isset ($this->_TheData[$key])) {
 			if($move){
 				$this->_pointer=$key ;
@@ -347,7 +364,7 @@ class RMLDO{
 		return $ROW;
 	}
 	
-	function theRow( $omit=false,$map=false,$step =1, $loop=null, $sc=false){
+	function theRow( $omit=false,$map=false,$step =1, $loop=null, $sc=false){  /////
  		if ($this->_isLooping && $this->_current){
   			if ($step >0){return $this->nextRow($loop, $omit, $step, $map,$sc ); }
  			if ($step <=0){return $this->prevRow($loop, $omit, $step, $map,$sc ); }////check this line in othe vs
@@ -357,7 +374,7 @@ class RMLDO{
 		return $this->thisRow($omit,$map,$sc);
   	}
   	
-	function theLoop($key,$loop){
+	function theLoop($key,$loop = null){
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		if ($loop && ( $key<0 || $key > $this->_theSize-1)){
 			    $key = $key%$this->_theSize;
@@ -368,9 +385,9 @@ class RMLDO{
 		return $key;
 	}
 	
-	function checkRow($line,$cheker=array(),$loop=NULL){
+	function checkRow($line,$cheker=array(),$loop=NULL,$offset=false){  /////
 		if(is_integer($line)){// if it's passed a #, infer it's a row location in _theData
-			$line = $this->_TheData[$this->theLoop($line,$loop)];
+			$line = $this->_TheData[$this->indexHandler($line, $offset, $loop)];//[$this->theLoop($line,$loop)];
 		}
 		$key = (isset($cheker['k'])) ? $cheker['k'] : $this->check1 ;
 		$val = (isset($cheker['v'])) ? $cheker['v'] : $this->check2 ;
@@ -497,7 +514,7 @@ class RMLDO{
 	function showMap(){
 		return $this->_keyMap;
 	}
-	function isMappedTo($key,$flipped=false){/////
+	function isMappedTo($key,$flipped=false){ /////
 		if (!$this->_keyMap && !$flipped && isset($this->_TheData[0][$key])) {return $key;}
 		if (is_string($key) && (($flipped && isset($this->_keyMap_inv[$key]))  || (!$flipped && isset($this->_keyMap[$key])))){ 
 			return  $flipped ? $this->_keyMap_inv[$key] : $this->_keyMap[$key];
@@ -623,18 +640,25 @@ class RMLDO{
 	
 	function currentRow(){ return $this->_current; }
 	
-	function rawGet($row=null,$col=null,$map=false, $rowDefault=null){////???
-		 if ($row === null) { $row == $this->_pointer ;}
-	     if (!is_scalar($row) || (!is_scalar($col) && $col!== null)) { return;}
-		 if (  $col === null || $col === false){
+	function rawGet($row=null,$col=null,$map=false, $args = false ){  ////???
+		 //if ($row === null) { $row == $this->_pointer ;}
+	     if (($row !== null && !is_scalar($row)) || ( $col !== null && !is_scalar($col))) { return;}
+		 $loop 	 = isset($args['loop'])   ? $args['loop'] :null;
+		 $offset = array_key_exists('off', $args)  ? $args['off'] :false;
+ 		 $rowDefault= isset($args['def']) ? $args['def'] : null;
+	     $row = $this->indexHandler($row, $offset, $loop, array('err'=> -2)); // calculates _theData index or returns an index that will evaluate  to false ( so as to return $rowDefault)
+		 if (  $col === null || $col === false || $col ==  ''){
 		 	return (isset( $this->_TheData[$row])) ? $this->_TheData[$row] : $rowDefault ;
 		 }
 		if ($map){ $col = $this->_keyMapCol($col, $map);}
-		return (isset( $this->_TheData[$row][$col] )) ? $this->_TheData[$row][$col] : null; 
+		return (isset( $this->_TheData[$row][$col] )) ? $this->_TheData[$row][$col] : $rowDefault; 
 	}
 	
-	function editRow(array $data,$row=null,$ovrride_map=null){
-		if ($row === null || $row === false){   $row = $this->_pointer;}
+	function editRow(array $data,$row=null,$ovrride_map=null, array $args=array()){ /////
+		$loop 	 = isset($args['loop'])   ? $args['loop'] :null;
+	    $offset = array_key_exists('off', $args)  ? $args['off'] :false;
+		// if ($row === null || $row === false){   $row = $this->_pointer;}
+		$row = $this->indexHandler($row, $offset, $loop, array('err'=> -2)); // calculates _theData index or returns an index that will evaluate  to false ( so as to return $rowDefault)
 		if (!isset($this->_TheData[$row])){return;}
  		$oldRow=$this->_TheData[$row];
 		$toChange = array_intersect_key($data, $oldRow);
@@ -696,14 +720,15 @@ class RMLDO{
 	}	
 		
 	//// Added Aug. 2020
-	function retrieve_row ( $at, array $addTo = array(),  array $aux_args=array()){
-		$loop = isset($aux_args['loop']) ? ($aux_args['loop'])  : false;
-		$offset = isset($aux_args['off'])? ($aux_args['off'])   : false;
-		$only= isset($aux_args['only'])  ? ($aux_args['only'])  : false;
-		$no_sc= isset($aux_args['nosc']) ? ($aux_args['nosc'])  : false;
-		$map_to= isset($aux_args['map']) ? ($aux_args['map'])  : false;
-  		$key = ($offset || $at === null) ?  $this->_pointer + $at :  $at ;   		
-		$key = $this->theLoop($key,$loop);
+	function retrieve_row ( $at, array $addTo = array(),  array $aux_args=array()){  ////////////9-20
+		$loop 	= isset($aux_args['loop'])  					?  $aux_args['loop'] : null;
+		$offset = array_key_exists('off', $aux_args)			?  $aux_args['off']	 : false;
+		$only 	= isset($aux_args['only']) && $aux_args['only'] ?  true : false;
+		$no_sc 	= isset($aux_args['nosc']) && $aux_args['nosc'] ?  true : false;
+		$map_to = isset($aux_args['map'])  && $aux_args['map']  ?  true : false;
+		$method = (isset($aux_args['ndx']) && $aux_args['ndx'])	?  null	: $offset;
+  		//$key = ($offset || $at === null) ?  $this->_pointer + $at :  $at ;   		
+		$key = $this->indexHandler($at,$method, $loop); ////$this->theLoop($key,$loop);
 		if (!isset($this->_TheData[$key])){ return array(); }
  		$loopThrough =  $only ? $addTo : $this->_TheData[$key];
  		if (!$no_sc && !$only) { return $loopThrough;}
@@ -727,6 +752,54 @@ class RMLDO{
   		}
   		return $ROW;
   	}
+  	
+  	// added sept 2020
+ 	protected function mapIndex(){
+	 	if ((!$this->_indexKey === '0' && !$this->_indexKey) || !$this->_TheData || !array_key_exists($this->_indexKey, $this->_TheData[0])){ return ;}
+	 	$this->_indexMap =  array_flip(array_column($this->_TheData, $this->_indexKey));
+  	}
+ 	
+ 	function setIndexKey($key=null){
+	 	if (!is_scalar($key)) {
+	 	   $key =  $this->_pKey ? $this->_pKey :  null;
+		}
+ 	 	$this->_indexKey =$key.'';
+	 	if ( $this->_indexKey === '0' || $this->_indexKey ) { $this->mapIndex();}
+ 	}
+ 	
+ 	function getIndexKey(){ return $this->_indexKey;}
+ 	
+ 	function jumpTo($i){
+	 	$i = $this->indexPos($i);
+	 	if ($i === null){ return false; }
+	 	$this->_pointer = $i;
+	 	return  true;
+ 	}
+ 	function indexPos($i, $err = null){
+	 	if ($i ===  null || ($this->_indexKey !== '0' && !$this->_indexKey) || !isset($this->_indexMap[$i])){ return $err; }
+	 	return $this->_indexMap[$i];
+ 	}
+ 	protected function updateIndex($old,$new ){
+	 	if ($old == $new  || !isset($this->_indexMap[$old])) { return; }
+ 	 	$this->_indexMap[$new] = $this->_indexMap[$old];
+ 	 	unset($this->_indexMap[$old]);
+ 	 	return true;
+  	}
+ 	
+ 	function indexHandler($i =  null, $offset = false, $loop = null, array $args = array()){
+	 	$set = isset($args['set']) && $args['set'] ? true : false;
+ 	 	if ($offset){
+		 	$i= $this->theLoop($i + $this->_pointer ,$loop);
+	  	}elseif($offset === null){
+		  	$ik = $this->indexPos($i);
+		  	$i = (($this->_indexKey === '0' || $this->_indexKey) &&  $ik !== null && isset($this->_TheData[$ik])) ? $ik: -1; 
+	  	}else{
+		  	$i = ($i === null || $i === false) ? $this->_pointer  : $i+0  ;
+		  	$i=isset($this->_TheData[$i]) ? $i : (isset($args['err']) ? $args['err'] :  $this->_pointer );
+	  	}
+	  	if ($set && (!isset($args['err']) || $i !== $args['err'] )) {$this->_pointer = $i;}
+	  	return $i;
+  	  }
 }	
  	
 function  rm_compare($a,$b=true,$op='==',$N=0){
