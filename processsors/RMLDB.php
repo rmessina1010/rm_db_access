@@ -1,4 +1,6 @@
 <?
+require_once 'settings.php';
+
 class  DB_hub{
 	   protected static $dbs 	= array();
 
@@ -323,3 +325,6 @@ function sql_D_str($table, $where, $lim=null, $ord=null){
 function sql_p_str($table){
 	return sql_str('p',$table);
 }
+
+
+DB_hub::create();

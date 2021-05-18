@@ -1,4 +1,6 @@
 <?
+require_once 'RMLDB.php';
+
 class RMLDO{
 	protected $_TheData 	= array();
 	protected $_pointer		= 0;

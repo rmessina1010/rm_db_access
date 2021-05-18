@@ -1,7 +1,6 @@
 <?
- 	include('RMLDO.php');
- 	DB_hub::create();
- 	
+ 	require_once 'RMLDB.php';
+ 	 	
  	class RMSO{
 	 	
 	    protected  	$mode	='r';
