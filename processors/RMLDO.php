@@ -168,7 +168,7 @@ class RMLDO
 			return array();
 		}
 		$arr['cond'] 		= (isset($args['opp'], $args['chk1']) && is_string($args['chk1'])) ? $args['opp'] :  false; // does it have a key and an operand? ( store the operand)
-		$arr['chkey']		= $arr['cond'] ? $this->_keyMapCol($args['chk1'], $map) : false;  //then store the key//////////////////
+		$arr['chkey']		= $arr['cond'] ? $this->_keyMapCol($args['chk1'], $args['map']) : false;  //then store the key//////////////////
 		$arr['check2']		= $arr['chval'] = isset($args['chk2']) ? $args['chk2'] : NULL; // $cheval acts a a buffer of original $check2
 		$arr['chkOffset'] 	= (isset($args['chkfst']) && is_scalar($arr['check2']))  ?  $args['chkfst'] : false;
 		$arr['chkLoop'] 	= isset($args['chklp']) ?  $args['chklp'] : false;
@@ -235,7 +235,7 @@ class RMLDO
 		if (isset($this->_TheData[$index][$key])) {
 			$this->_TheData[$index][$key] = $val;
 			if ($this->_indexKey === $key) {
-				updateIndex($this->_indexKey, $val);
+				$this->updateIndex($this->_indexKey, $val);
 			}
 		}
 	}
@@ -246,7 +246,7 @@ class RMLDO
 			if (isset($this->_TheData[$index][$key])) {
 				$this->_TheData[$index][$key] = $val;
 				if ($this->_indexKey === $key) {
-					updateIndex($this->_indexKey, $val);
+					$this->updateIndex($this->_indexKey, $val);
 				}
 			}
 		}
@@ -433,7 +433,7 @@ class RMLDO
 
 			$ROW = ($omit && is_array($omit)) ?  $this->omit($this->_TheData[$key], $omit, $map) : $this->_TheData[$key];
 			if (is_array($sc)) {
-				$ROW = run_sc_row($ROW, $sc);
+				$ROW = $this->run_sc_row($ROW, $sc);
 			}
 			$ROW = $this->_keyMapRow($ROW, $map);
 			return $ROW;
@@ -444,7 +444,7 @@ class RMLDO
 	{
 		$ROW = ($omit && is_array($omit)) ?  $this->omit($this->_current, $omit, $map) : $this->_current;
 		if (is_array($sc)) {
-			$ROW = run_sc_row($ROW, $sc);
+			$ROW = $this->run_sc_row($ROW, $sc);
 		}
 		$ROW = $this->_keyMapRow($ROW, $map);
 		return $ROW;
@@ -526,14 +526,14 @@ class RMLDO
 		if (!function_exists($foo)) {
 			try {
 				require_once($relroot . "includes/modules/RM_$outFoo.php");
-			} catch (Exeption $e) {
+			} catch (Exception $e) {
 				return;
 			}
 		}
 		if (is_array($args)) {
 			$chkey = $check2 = $cond = $neg = false;
 			extract($this->getCheckVals($args));
-			$eval = rm_compare($this->_the($chkey), $check2, $cond);
+			$eval = rm_compare($this->the_($chkey), $check2, $cond);
 			if (!($eval xor $neg)) {
 				return;
 			}
@@ -561,9 +561,9 @@ class RMLDO
 				if ($chval === '____'   && $mode == 'rel') {
 					$check2 = $output;
 				} elseif ($chkOffset ||  $chkOffset === 0  || $chkOffset === '0') {
-					$check2 = $this->_the($chval, '', '', $chkOffset, $chkLoop, false);
+					$check2 = $this->the_($chval, '', '', $chkOffset, $chkLoop, false);
 				}
-				$eval = rm_compare($this->_the($chkey), $check2, $cond);
+				$eval = rm_compare($this->the_($chkey), $check2, $cond);
 				if (!($eval xor $neg)) {
 					continue;
 				}
@@ -819,7 +819,7 @@ class RMLDO
 		return $this->_current;
 	}
 
-	function rawGet($row = null, $col = null, $map = false, $args = false)
+	function rawGet($row = null, $col = null, $map = false, $args = array())
 	{  ////???
 		//if ($row === null) { $row == $this->_pointer ;}
 		if (($row !== null && !is_scalar($row)) || ($col !== null && !is_scalar($col))) {
@@ -1118,4 +1118,3 @@ function  rm_compare($a, $b = true, $op = '==', $N = 0)
 			return ($a == $b);
 	}
 }
-?>
