@@ -1,8 +1,8 @@
 <?
  	require_once 'RMLDB.php';
- 	 	
+
  	class RMSO{
-	 	
+
 	    protected  	$mode	='r';
 	   	protected  	$MOs	=array('c', 'r', 'u', 'd','p');
 	   	protected  	$SQL	= '';
@@ -10,7 +10,7 @@
 	   	protected  	$conn	= null;
 	   	protected  	$cname	= '_default';
 	   	protected  	$data 	= array();
- 
+
 
 	    function __construct($table, $cols="*", $wher=false,$o=false, $args=array()){
 	     	$this->conn= (isset($args['conn']))? $args['conn'] : DBNAME;
@@ -30,63 +30,63 @@
 		     	$this->data = is_array($wher) ? $wher : array();
  	     	}
 	     	$this->SQL = $table ? sql_str($operation, $table, $args) : $cols;
- 	     	$this->OBJ = new  DB_query($this->SQL, DB_hub::connect($this->conn, $this->cname), $this->data);   
+ 	     	$this->OBJ = new  DB_query($this->SQL, DB_hub::connect($this->conn, $this->cname), $this->data);
 
 	     }
-	     
+
 	    function SetMode($m){
 	    		if(!is_string($m)){return ;}
 	    		$m=strtolower($m);
 	     		if (in_array($m,$this->MOs)){$this->mode=$m;}
 	    }
-		
+
 		function _doQ($data = null){
-			$data = $data === null ? $this->data :   is_array($data) ? $data : array() ; 
+			$data = $data === null ? $this->data :   is_array($data) ? $data : array() ;
 			return $this->OBJ->run($data);
 		}
 		function STMNT(){
  			return $this->OBJ->STMNT();
 		}
- 
+
  	}
-	  	
+
  function doQ($q,$data=false,$ret=false,$cnn=DBNAME,$cname ='_default'){
    $log=array();  														// intialize error log
    $prepped=false;
    if (!is_array($q)){ $Q[0]=$q;}
    else {$Q=$q;}														// initialize array of queries, $Q
-   $so= new  DB_query('', DB_hub::connect($cnn, $cname));   												//set up stament object 
+   $so= new  DB_query('', DB_hub::connect($cnn, $cname));   												//set up stament object
    //$dbh=$so->dbh();													//set up DB handle;
    //if ($trns){$dbh->beginTransaction();}								//intitiale transaction IF requested by user;
    $dataArray= is_array($data);
-   
-   
+
+
 			if ( count($Q) ===1 ){ //special case for when there is only one query to perform
-				if ( $dataArray   ){ 
+				if ( $dataArray   ){
 					$hasSubArr=array_filter($data,'is_array');
  	 				if (!$hasSubArr) { $data=array(key($Q)=>array($data)); }
-	 				elseif (!is_array(reset(reset($hasSubArr)))) { $data=array(key($Q)=>$data);} // double nsested
- 	 			} 
+	 				elseif (!is_array(reset($hasSubArr))) { $data=array(key($Q)=>$data);} // double nsested
+ 	 			}
 	 			else{$data=array(array(array($data)));}
-	 			$prepped= true;		
+	 			$prepped= true;
 			}
-			
-   
+
+
    foreach ($Q as $key=>$qr){
     	$so->prep($qr);
     	$stmt= $so->STMNT();
-    	
+
     	if ($prepped){ $dataShell=$data;}
     	elseif($dataArray && isset($data[$key])) {
     	   $dataShell=  (is_array($data[$key]) && array_filter($data[$key], 'is_array')) ?  $data[$key] :array($data[$key]) ;
     	}
     	else { $dataShell= array($data);}
-    	
-    	
+
+
      	foreach ($dataShell as $dataRow){
  			 $dataLines= (is_array($dataRow) && array_filter($dataRow, 'is_array')) ?  $dataRow : array($dataRow);
        		 foreach ($dataLines as  $vars){
- 					try{ 
+ 					try{
  						$ovar=$vars;
 						if (!is_array($vars)){ $vars=array();}
 						$flg= $stmt->execute($vars);
@@ -97,7 +97,7 @@
 							return ($ret) ?  $log :$err ;
 						}
 					}
-					catch(PDOException $e){ 
+					catch(PDOException $e){
 						$err='could not do : '.$qr.' [ data line: '.implode( ',' ,$vars).']' ;
 						$log[]=array($qr,$ovar,$err,$e->getMessage());
 						echo $e->getMessage();
@@ -106,7 +106,7 @@
 					}
     		 }
     	}
-    	
+
     }
      //if ($trns) {$dbh->commit();}
      return ($ret) ?  $log :false;

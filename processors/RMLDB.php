@@ -328,3 +328,4 @@ function sql_p_str($table){
 
 
 DB_hub::create();
+?>

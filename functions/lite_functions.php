@@ -113,3 +113,4 @@ function rm_sani_attrs($html,array $allow =array()){
   	$html = $htm ? :$html;
  	return $html;
 }
+?>
