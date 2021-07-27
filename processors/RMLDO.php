@@ -95,7 +95,7 @@ class RMLDO
 	protected function tryFetch()
 	{
 		try {
-			$r = $this->_STMNTobj->fetchAll();
+			$r = $this->_STMNTobj->fetchAll(PDO::FETCH_ASSOC);
 			return  $r ?  $r : array();
 		} catch (Exception $e) {
 			return array();
