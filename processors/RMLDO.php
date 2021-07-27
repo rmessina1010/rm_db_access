@@ -260,7 +260,7 @@ class RMLDO
 	{
 		if ($this->_STMNTobj) {
 			$this->_STMNTobj->execute($data);
-			$data = tryFetch();
+			$data = $this->tryFetch();
 		}
 		$this->set_theData($data);
 	}
@@ -1118,3 +1118,13 @@ function  rm_compare($a, $b = true, $op = '==', $N = 0)
 			return ($a == $b);
 	}
 }
+
+class  FD extends RMLDO
+{
+	function FD($t)
+	{
+		$this->res = $t;
+		$this->size(true);
+	}
+}
+?>
