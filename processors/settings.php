@@ -1,4 +1,9 @@
 <?
+error_reporting  (E_ERROR); 
+ini_set ("display_errors", true); 
+ini_set ("mysql.connect_timeout", 1200); 
+ini_set ("default_socket_timeout", 1200); 
+
 define('DB_TYP_DEF','mysql');		//Default DB type.. new as of 5.0
 define('SCHEME', isset($_SERVER['HTTPS']) ? 'https://' : 'http://');
 define('DBNAME','dbname');
