@@ -1,8 +1,8 @@
 <?
 require_once 'RMLDB.php';
+require_once './includes/functions/sc_process_fn.php';
 
-class RMLDO
-{
+class RMLDO{
 	protected $_TheData 	= array();
 	protected $_pointer		= 0;
 	protected $_theSize		= 0;
