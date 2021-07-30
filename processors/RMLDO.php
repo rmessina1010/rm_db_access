@@ -28,8 +28,6 @@ class RMLDO{
 
 	protected $l			= 0;
 	protected $h			= 0;
-	protected $c_l			= 0;
-	protected $c_h			= 0;
 	protected $clamp		= false;
 
 	function __construct($input, array $args = array())
@@ -121,6 +119,7 @@ class RMLDO{
 		$this->setColumns();
 		$this->calcSize();
 		$this->resetPointer();
+		$this->resetClamp();
 	}
 
 
@@ -193,7 +192,7 @@ class RMLDO{
 		} else {
 			$newPointer = ($rstPointer === NULL) ? $this->_pointer : $this->_pointer + $offset;
 			if (isset($this->_TheData[$newPointer])) {
-				$this->_pointer = $newPointer;
+				$this->_pointer = $this->applyClamp($newPointer);
 			}/*moves pointer to*/
 		}
 	}
@@ -205,7 +204,7 @@ class RMLDO{
 
 	function resetPointer($rev = false)
 	{
-		$this->_pointer 	= $rev ? $this->_theSize - 1 : 0;
+		$this->_pointer 	= $this->applyClamp($rev ? $this->_theSize - 1 : 0);
 		$this->_isLooping 	=  false;
 		$this->_current 	= isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : null;
 	}
@@ -395,7 +394,7 @@ class RMLDO{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		$this->_pointer -= $step;
 		if ($this->_pointer < 0) {
-			$this->_pointer = ($loop) ? $this->_theSize - 1 : 0;
+			$this->_pointer =   $this->applyClamp($loop   ? $this->_theSize - 1 : 0);
 			$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
 		} else {
 			$this->_current = isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
@@ -409,7 +408,7 @@ class RMLDO{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		$this->_pointer += $step;
 		if ($this->_pointer > $this->_theSize - 1) {
-			$this->_pointer = ($loop) ?  0 : $this->_theSize - 1;
+			$this->_pointer =  $this->applyClamp($loop ?  0 : $this->_theSize - 1);
 			$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
 		} else {
 			$this->_current = isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
@@ -426,7 +425,7 @@ class RMLDO{
 		$key = $this->indexHandler($at, $offset, $loop);
 		if (isset($this->_TheData[$key])) {
 			if ($move) {
-				$this->_pointer = $key;
+				$this->_pointer = $this->applyClamp($key);
 				$this->_current = $this->_TheData[$key];
 			}
 
@@ -569,7 +568,7 @@ class RMLDO{
 				}
 			}
 			if ($move !== null) {
-				$this->_pointer = $i;
+				$this->_pointer = $this->applyClamp($i);
 			}
 			switch ($mode) {
 				case 'rel':
@@ -583,7 +582,7 @@ class RMLDO{
 			}
 		}
 		if (!$move) {
-			$this->_pointer = $OLDpointer;
+			$this->_pointer = $this->applyClamp($OLDpointer);
 		}/*resets pointer to*/
 		return $output;
 	}
@@ -1007,7 +1006,7 @@ class RMLDO{
 		if ($i === null) {
 			return false;
 		}
-		$this->_pointer = $i;
+		$this->_pointer = $this->applyClamp($i);
 		return  true;
 	}
 	function indexPos($i, $err = null)
@@ -1040,26 +1039,50 @@ class RMLDO{
 			$i = isset($this->_TheData[$i]) ? $i : (isset($args['err']) ? $args['err'] :  $this->_pointer);
 		}
 		if ($set && (!isset($args['err']) || $i !== $args['err'])) {
-			$this->_pointer = $i;
+			$this->_pointer = $this->applyClamp($i);
 		}
 		return $i;
 	}
 
-
 	//july 2021
-	function setClamp($l = 0, $h = 0)
-	{
+	function setClamp($l = 0, $h = 0, $apply =true){
+		if ($h <= 0){  
+			$h = $this->_theSize + $h;
+			$h = $h<0 ? 0: $h;
+		}
+		if ($h > $this->_theSize){ $h =$this->_theSize;}
+		if ($l < 0){  $l = 0 ; }
+		if ($l > $this->_theSize){ $l =$this->_theSize;}
+		if ($l>$h){
+			$temp =$l;
+			$l=$h;
+			$h=$temp;
+		}
 		$this->l = $l;
 		$this->h = $h;
-		$this->c_l = $l > 0  ? $l : 0;
-		$this->c_h = $h > 0  ? $h : $this->size - $h;
+		$this->clamp = $apply ? true :false;
+		$this->applyClamp();
+ 	}
+ 	function toggleClamp(){
+	 	$this->clamp=!$this->clamp;
+ 	}
+	function unclamp() { 
+		$this->clamp = false;
 	}
-	function unclamp()
-	{
-		$this->l = 0;
-		$this->h = 0;
-		$this->c_l = 0;
-		$this->c_h = $this->size;
+	function clamp() {
+		$this->clamp = true;
+	}
+	function resetClamp(){
+		$this->clamp = false;
+		$this->l=0;
+		$this->h=$this->_theSize;	
+	}
+	protected function applyClamp(){
+		if ($this->clamp) {
+			if ($this->_pointer < $this->l){ return $this->l;}
+			if ($this->_pointer > $this->h){ return $this->h;}
+		}
+		return $this->_pointer;
 	}
 }
 
