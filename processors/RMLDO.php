@@ -474,7 +474,6 @@ class RMLDO{
 		$high =  $this->clamp ?  $this->h : $this->_theSize - 1;
 		$size =  $high - $low + 1;
 		$key = $this->clamp ? ($key <0  ?  $this->h+$key    : $this->l+$key     ) : $key;
-
 		if ($key < $low || $key > $high){ 
 			if(!$loop) {
 				if  (!$peg) { return $key;}
