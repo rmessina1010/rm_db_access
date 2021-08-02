@@ -250,8 +250,8 @@ class RMLDO{
 			}
 		}
 	}
-	function Q()
-	{
+	
+	function Q(){
 		return $this->_STMNTobj ? $this->_STMNTobj->queryString : null;
 	}
 
@@ -467,14 +467,23 @@ class RMLDO{
 		return $this->thisRow($omit, $map, $sc);
 	}
 
-	function theLoop($key, $loop = null)
+	function theLoop($key, $loop = null, $peg=true)
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		if ($loop && ($key < 0 || $key > $this->_theSize - 1)) {
-			$key = $key % $this->_theSize;
-			if ($key < 0) {
-				$key = $this->_theSize + $key;
+		$low  =  $this->clamp ?  $this->l : 0;
+		$high =  $this->clamp ?  $this->h : $this->_theSize - 1;
+		$size =  $high - $low + 1;
+		$key = $this->clamp ? ($key <0  ?  $this->h+$key    : $this->l+$key     ) : $key;
+
+		if ($key < $low || $key > $high){ 
+			if(!$loop) {
+				if  (!$peg) { return $key;}
+				return  $key < $low  ?  $low : $high;
 			}
+ 			if ($key < $low) {
+				$key = $high + ($key - $low);
+			}
+			$key = abs($key % $size) + $low;
 		}
 		return $key;
 	}
@@ -549,8 +558,8 @@ class RMLDO{
 		$chkLoop = $chval = $chkOffset = $mode = $output = $chkey = $check2 = $cond = $neg = null; //default args
 		extract($this->getCheckVals($args));
 		$OLDpointer = $this->_pointer;
-		$start =  (!$start  && $start !== 0) ?  $this->_pointer :  $this->theLoop($start, $loop, $this->_theSize);
-		$end =  (!$end  && $end !== 0) ?  $this->_theSize :   $this->theLoop($end, $loop, $this->_theSize);
+		$start =  (!$start  && $start !== 0) ?  $this->_pointer :  $this->theLoop($start, $loop	);
+		$end =  (!$end  && $end !== 0) ?  $this->_theSize :   $this->theLoop($end, $loop);
 		if ($end < $start) {
 			$end = $end + $this->_theSize;
 		}
@@ -1047,12 +1056,12 @@ class RMLDO{
 	//july 2021
 	function setClamp($l = 0, $h = 0, $apply =true){
 		if ($h <= 0){  
-			$h = $this->_theSize + $h;
+			$h = $this->_theSize + $h -1;
 			$h = $h<0 ? 0: $h;
 		}
-		if ($h > $this->_theSize){ $h =$this->_theSize;}
+		if ($h >= $this->_theSize){ $h =$this->_theSize -1 ;}
 		if ($l < 0){  $l = 0 ; }
-		if ($l > $this->_theSize){ $l =$this->_theSize;}
+		if ($l >= $this->_theSize){ $l =$this->_theSize -1;}
 		if ($l>$h){
 			$temp =$l;
 			$l=$h;
@@ -1075,7 +1084,7 @@ class RMLDO{
 	function resetClamp(){
 		$this->clamp = false;
 		$this->l=0;
-		$this->h=$this->_theSize;	
+		$this->h=$this->_theSize -1;	
 	}
 	protected function applyClamp(){
 		if ($this->clamp) {
