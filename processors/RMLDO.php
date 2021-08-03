@@ -390,29 +390,21 @@ class RMLDO{
 
 	function prevRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
 	{
-		$step = (!$step) ? 1 : abs($step);
-		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		$this->_pointer -= $step;
-		if ($this->_pointer < 0) {
-			$this->_pointer =   $this->applyClamp($loop   ? $this->_theSize - 1 : 0);
-			$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
-		} else {
-			$this->_current = isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
-		}
-		return $this->thisRow($omit, $map, $sc);
+		$step = (!$step) ? -1 : abs($step) * -1;
+		return $this->stepRow($loop, $omit, $step, $map, $sc);
 	}
 
 	function nextRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
 	{
 		$step = (!$step) ? 1 : abs($step);
+		return $this->stepRow($loop, $omit, $step, $map, $sc);
+	}
+	
+	function stepRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
+	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		$this->_pointer += $step;
-		if ($this->_pointer > $this->_theSize - 1) {
-			$this->_pointer =  $this->applyClamp($loop ?  0 : $this->_theSize - 1);
-			$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
-		} else {
-			$this->_current = isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
-		}
+		$this->_pointer = theLoop($this->_pointer + $step, $loop , false);
+ 		$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
 		return $this->thisRow($omit, $map, $sc);
 	}
 
@@ -428,7 +420,6 @@ class RMLDO{
 				$this->_pointer = $this->applyClamp($key);
 				$this->_current = $this->_TheData[$key];
 			}
-
 
 			$ROW = ($omit && is_array($omit)) ?  $this->omit($this->_TheData[$key], $omit, $map) : $this->_TheData[$key];
 			if (is_array($sc)) {
@@ -1069,7 +1060,7 @@ class RMLDO{
 		$this->l = $l;
 		$this->h = $h;
 		$this->clamp = $apply ? true :false;
-		$this->applyClamp();
+		if ($this->clamp) { $this->_pointer=$this->applyClamp($this->_pointer);}
  	}
  	function toggleClamp(){
 	 	$this->clamp=!$this->clamp;
@@ -1085,12 +1076,12 @@ class RMLDO{
 		$this->l=0;
 		$this->h=$this->_theSize -1;	
 	}
-	protected function applyClamp(){
+	protected function applyClamp($pointer){
 		if ($this->clamp) {
-			if ($this->_pointer < $this->l){ return $this->l;}
-			if ($this->_pointer > $this->h){ return $this->h;}
+			if ($pointer < $this->l){ return $this->l;}
+			if ($pointer > $this->h){ return $this->h;}
 		}
-		return $this->_pointer;
+		return $pointer;
 	}
 }
 
