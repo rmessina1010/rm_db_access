@@ -403,8 +403,10 @@ class RMLDO{
 	function stepRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		$this->_pointer = theLoop($this->_pointer + $step, $loop , false);
- 		$this->_current = ($loop &&  $this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : false;
+		$point = $this->theLoop($this->_pointer + $step, $loop , false);
+		if ($this->_current  ||  $this->_TheData[$point]){$this->_pointer  =$point;}
+		$this->_current =  $this->_TheData[$point]  ? $this->_TheData[$point] : false;
+ 		var_dump($this->_pointer);
 		return $this->thisRow($omit, $map, $sc);
 	}
 
