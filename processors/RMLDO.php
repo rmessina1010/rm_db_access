@@ -59,7 +59,7 @@ class RMLDO{
 				}
 				if (is_array($dbh)) {
 					$dbname = array_unshift($dbh);
-					$dbconn = $dbh ? array_unshift($dbh) : (isset($args['dbi']) && is_string($args['dbi'])) ? $args['dbi'] : '_default';
+					$dbconn = $dbh ? array_unshift($dbh) : ((isset($args['dbi']) && is_string($args['dbi'])) ? $args['dbi'] : '_default');
 					$dbh = DB_hub::connect($dbname, $dbconn);
 				} else {
 					$dbh = false;
@@ -107,7 +107,7 @@ class RMLDO{
 			return;
 		}
 		$this->_table = array_shift(array_filter($matches[1]));
-		$this->_pKey = method_exists('pKey', 'getK')  ? pKey::getK($this->_table) : (is_string($fallback_key)) ? $fallback_key : false;
+		$this->_pKey = method_exists('pKey', 'getK')  ? pKey::getK($this->_table) : ((is_string($fallback_key)) ? $fallback_key : false);
 	}
 
 	protected function set_theData($data = array())
@@ -250,7 +250,7 @@ class RMLDO{
 			}
 		}
 	}
-	
+
 	function Q(){
 		return $this->_STMNTobj ? $this->_STMNTobj->queryString : null;
 	}
@@ -399,14 +399,13 @@ class RMLDO{
 		$step = (!$step) ? 1 : abs($step);
 		return $this->stepRow($loop, $omit, $step, $map, $sc);
 	}
-	
+
 	function stepRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		$point = $this->theLoop($this->_pointer + $step, $loop , false);
 		if ($this->_current  ||  $this->_TheData[$point]){$this->_pointer  =$point;}
 		$this->_current =  $this->_TheData[$point]  ? $this->_TheData[$point] : false;
- 		var_dump($this->_pointer);
 		return $this->thisRow($omit, $map, $sc);
 	}
 
@@ -467,7 +466,7 @@ class RMLDO{
 		$high =  $this->clamp ?  $this->h : $this->_theSize - 1;
 		$size =  $high - $low + 1;
 		$key = $this->clamp ? ($key <0  ?  $this->h+$key    : $this->l+$key     ) : $key;
-		if ($key < $low || $key > $high){ 
+		if ($key < $low || $key > $high){
 			if(!$loop) {
 				if  (!$peg) { return $key;}
 				return  $key < $low  ?  $low : $high;
@@ -1047,7 +1046,7 @@ class RMLDO{
 
 	//july 2021
 	function setClamp($l = 0, $h = 0, $apply =true){
-		if ($h <= 0){  
+		if ($h <= 0){
 			$h = $this->_theSize + $h -1;
 			$h = $h<0 ? 0: $h;
 		}
@@ -1067,7 +1066,7 @@ class RMLDO{
  	function toggleClamp(){
 	 	$this->clamp=!$this->clamp;
  	}
-	function unclamp() { 
+	function unclamp() {
 		$this->clamp = false;
 	}
 	function clamp() {
@@ -1076,7 +1075,7 @@ class RMLDO{
 	function resetClamp(){
 		$this->clamp = false;
 		$this->l=0;
-		$this->h=$this->_theSize -1;	
+		$this->h=$this->_theSize -1;
 	}
 	protected function applyClamp($pointer){
 		if ($this->clamp) {
