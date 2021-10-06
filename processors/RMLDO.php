@@ -29,6 +29,8 @@ class RMLDO{
 	protected $l			= 0;
 	protected $h			= 0;
 	protected $clamp		= false;
+	
+	protected $error		= null;
 
 	function __construct($input, array $args = array())
 	{
@@ -94,11 +96,24 @@ class RMLDO{
 	{
 		try {
 			$r = $this->_STMNTobj->fetchAll(PDO::FETCH_ASSOC);
+			$this->clear_err();
 			return  $r ?  $r : array();
 		} catch (Exception $e) {
+			$this->set_err($e);
 			return array();
 		}
 	}
+	
+	protected function clear_err(){
+		$this->error = null;
+	}
+	protected function set_err($err){
+		$this->error = $err;
+	}
+	function has_err(){
+		return $this->error || false ;
+	}
+
 	protected function setTable($fallback_key = false)
 	{
 		preg_match_all('/(?:FROM +\(?`?)((?!SELECT )[\w$\x{00C0}-\x{00FF}]*)/i', $this->_STMNTobj->queryString, $matches);

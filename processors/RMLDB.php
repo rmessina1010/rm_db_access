@@ -64,6 +64,7 @@ class DB
 	protected $db_host 	= null;
 	protected $db_dsn	= null;
 	protected $dbhs 	= array();
+	protected $error 	= array();
 
 
 	function __construct($db_name = DBNAME, $user = UACC,  $password = UPASS, $db_host = 'localhost',  $db_type = 'mysql')
@@ -100,7 +101,9 @@ class DB
 			if (!isset($this->dbhs[$dbh])) {
 				try {
 					$this->dbhs[$dbh] = new PDO($this->db_dsn, $this->user, $this->password);
+					$this->clear_err($dbh);
 				} catch (PDOException $e) {
+					$this->set_err($dbh, $e->getMessage());
 					echo 'Connection failed: ' . $e->getMessage();
 					return null;
 				}
@@ -108,7 +111,20 @@ class DB
 		}
 		return $this;
 	}
-
+	
+	function has_err($dbh=null){
+		if ($dbh === null ){ return $this->hasErr; }
+		return isset($this->hasErr[$dbh]) ?  $this->hasErr[$dbh] : null;	
+	}
+	
+	protected function clear_err($dbh){
+		unset($this->hasErr[$dbh]);
+	}
+	
+	protected function set_err($dbh,$err){
+		$this->hasErr[$dbh] = $err;
+	}
+	
 	function close($dbh = '_default')
 	{
 		if (is_scalar($dbh)) {
