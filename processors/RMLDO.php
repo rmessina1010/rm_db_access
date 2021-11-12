@@ -25,6 +25,7 @@ class RMLDO{
 	var 	  $check1		= null;
 	var 	  $check2		= null;
 	var 	  $opp			= '==';
+	var 	  $def_row		= array();
 
 	protected $l			= 0;
 	protected $h			= 0;
@@ -362,6 +363,7 @@ class RMLDO{
 		} else {
 			$offset = array_key_exists('offs', $args)  ? $args['offs'] : false;
 		}
+		$def_row = (array_key_exists('def', $args) && is_array($args['def'])) ? $args['def'] : $this->def_row;
 		$fxo = (array_key_exists('fxo', $args) && !$offset) ?  $args['fxo'] : null; //offset as fixed index
 		$loop = isset($args['loop']) && $args['loop'] ?  true : false;
 		$shortCode = isset($args['sc'])  ? $args['sc'] : null;
@@ -382,7 +384,7 @@ class RMLDO{
 		//$theRow =  $this->theLoop($theRow,$loop);
 		$theRow = ($fxo !== null) ? $this->indexHandler($fxo, $offset, $loop) : $this->theLoop($this->_pointer + $offset, $loop);
 		$key = $this->_keyMapCol($key, $mapped);
-		$value = isset($this->_TheData[$theRow][$key]) ? $this->_TheData[$theRow][$key] : NULL;
+		$value = isset($this->_TheData[$theRow][$key]) ? $this->_TheData[$theRow][$key] : (isset($def_row[$key]) ? $def_row[$key] : NULL);
 		if ($bef === null) {
 			return $value;
 		}
@@ -572,7 +574,7 @@ class RMLDO{
 		for ($i = $start; $i < $end; $i += $step) {
 			$key = $i % $this->_theSize;
 			if ($cond) {
-				if ($chval === '____'   && $mode == 'rel') {
+				if ($chval === '____'   && $mode == 'rec') {
 					$check2 = $output;
 				} elseif ($chkOffset ||  $chkOffset === 0  || $chkOffset === '0') {
 					$check2 = $this->the_($chval, '', '', $chkOffset, $chkLoop, false);
@@ -586,7 +588,7 @@ class RMLDO{
 				$this->_pointer = $this->applyClamp($i);
 			}
 			switch ($mode) {
-				case 'rel':
+				case 'rec':
 					$output = $this->output($outFoo, $fooArgs, false, $key, null, $output);
 					break;
 				case 'arr':
