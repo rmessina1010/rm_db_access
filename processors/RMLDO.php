@@ -1,8 +1,10 @@
 <?
 require_once 'RMLDB.php';
 require_once './includes/functions/sc_process_fn.php';
+require_once './includes/functions/core_foos.php';
 
-class RMLDO{
+class RMLDO
+{
 	protected $_TheData 	= array();
 	protected $_pointer		= 0;
 	protected $_theSize		= 0;
@@ -30,7 +32,7 @@ class RMLDO{
 	protected $l			= 0;
 	protected $h			= 0;
 	protected $clamp		= false;
-	
+
 	protected $error		= null;
 
 	function __construct($input, array $args = array())
@@ -104,15 +106,18 @@ class RMLDO{
 			return array();
 		}
 	}
-	
-	protected function clear_err(){
+
+	protected function clear_err()
+	{
 		$this->error = null;
 	}
-	protected function set_err($err){
+	protected function set_err($err)
+	{
 		$this->error = $err;
 	}
-	function has_err(){
-		return $this->error || false ;
+	function has_err()
+	{
+		return $this->error || false;
 	}
 
 	protected function setTable($fallback_key = false)
@@ -267,7 +272,8 @@ class RMLDO{
 		}
 	}
 
-	function Q(){
+	function Q()
+	{
 		return $this->_STMNTobj ? $this->_STMNTobj->queryString : null;
 	}
 
@@ -420,8 +426,10 @@ class RMLDO{
 	function stepRow($loop = NULL, $omit = false, $step = 1, $map = false, $sc = false)
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		$point = $this->theLoop($this->_pointer + $step, $loop , false);
-		if ($this->_current  ||  $this->_TheData[$point]){$this->_pointer  =$point;}
+		$point = $this->theLoop($this->_pointer + $step, $loop, false);
+		if ($this->_current  ||  $this->_TheData[$point]) {
+			$this->_pointer  = $point;
+		}
 		$this->_current =  $this->_TheData[$point]  ? $this->_TheData[$point] : false;
 		return $this->thisRow($omit, $map, $sc);
 	}
@@ -476,19 +484,21 @@ class RMLDO{
 		return $this->thisRow($omit, $map, $sc);
 	}
 
-	function theLoop($key, $loop = null, $peg=true)
+	function theLoop($key, $loop = null, $peg = true)
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		$low  =  $this->clamp ?  $this->l : 0;
 		$high =  $this->clamp ?  $this->h : $this->_theSize - 1;
 		$size =  $high - $low + 1;
-		$key = $this->clamp ? ($key <0  ?  $this->h+$key    : $this->l+$key     ) : $key;
-		if ($key < $low || $key > $high){
-			if(!$loop) {
-				if  (!$peg) { return $key;}
+		$key = $this->clamp ? ($key < 0  ?  $this->h + $key    : $this->l + $key) : $key;
+		if ($key < $low || $key > $high) {
+			if (!$loop) {
+				if (!$peg) {
+					return $key;
+				}
 				return  $key < $low  ?  $low : $high;
 			}
- 			if ($key < $low) {
+			if ($key < $low) {
 				$key = $high + ($key - $low);
 			}
 			$key = abs($key % $size) + $low;
@@ -566,7 +576,7 @@ class RMLDO{
 		$chkLoop = $chval = $chkOffset = $mode = $output = $chkey = $check2 = $cond = $neg = null; //default args
 		extract($this->getCheckVals($args));
 		$OLDpointer = $this->_pointer;
-		$start =  (!$start  && $start !== 0) ?  $this->_pointer :  $this->theLoop($start, $loop	);
+		$start =  (!$start  && $start !== 0) ?  $this->_pointer :  $this->theLoop($start, $loop);
 		$end =  (!$end  && $end !== 0) ?  $this->_theSize :   $this->theLoop($end, $loop);
 		if ($end < $start) {
 			$end = $end + $this->_theSize;
@@ -1062,100 +1072,62 @@ class RMLDO{
 	}
 
 	//july 2021
-	function setClamp($l = 0, $h = 0, $apply =true){
-		if ($h <= 0){
-			$h = $this->_theSize + $h -1;
-			$h = $h<0 ? 0: $h;
+	function setClamp($l = 0, $h = 0, $apply = true)
+	{
+		if ($h <= 0) {
+			$h = $this->_theSize + $h - 1;
+			$h = $h < 0 ? 0 : $h;
 		}
-		if ($h >= $this->_theSize){ $h =$this->_theSize -1 ;}
-		if ($l < 0){  $l = 0 ; }
-		if ($l >= $this->_theSize){ $l =$this->_theSize -1;}
-		if ($l>$h){
-			$temp =$l;
-			$l=$h;
-			$h=$temp;
+		if ($h >= $this->_theSize) {
+			$h = $this->_theSize - 1;
+		}
+		if ($l < 0) {
+			$l = 0;
+		}
+		if ($l >= $this->_theSize) {
+			$l = $this->_theSize - 1;
+		}
+		if ($l > $h) {
+			$temp = $l;
+			$l = $h;
+			$h = $temp;
 		}
 		$this->l = $l;
 		$this->h = $h;
-		$this->clamp = $apply ? true :false;
-		if ($this->clamp) { $this->_pointer=$this->applyClamp($this->_pointer);}
- 	}
- 	function toggleClamp(){
-	 	$this->clamp=!$this->clamp;
- 	}
-	function unclamp() {
+		$this->clamp = $apply ? true : false;
+		if ($this->clamp) {
+			$this->_pointer = $this->applyClamp($this->_pointer);
+		}
+	}
+	function toggleClamp()
+	{
+		$this->clamp = !$this->clamp;
+	}
+	function unclamp()
+	{
 		$this->clamp = false;
 	}
-	function clamp() {
+	function clamp()
+	{
 		$this->clamp = true;
 	}
-	function resetClamp(){
+	function resetClamp()
+	{
 		$this->clamp = false;
-		$this->l=0;
-		$this->h=$this->_theSize -1;
+		$this->l = 0;
+		$this->h = $this->_theSize - 1;
 	}
-	protected function applyClamp($pointer){
+	protected function applyClamp($pointer)
+	{
 		if ($this->clamp) {
-			if ($pointer < $this->l){ return $this->l;}
-			if ($pointer > $this->h){ return $this->h;}
+			if ($pointer < $this->l) {
+				return $this->l;
+			}
+			if ($pointer > $this->h) {
+				return $this->h;
+			}
 		}
 		return $pointer;
-	}
-}
-
-function  rm_compare($a, $b = true, $op = '==', $N = 0)
-{
-	switch ($op) {
-		case 'prm':
-			return ($b) ? (pow(2, $a) % $a == 2) : 	!(pow(2, $a) % $a == 2);
-		case 'str':
-			return ($b) ? is_string($a) 		: 	!is_string($a);
-		case 'arr':
-			return ($b) ? is_array($a) 		: 	!is_array($a);
-		case 'boo':
-			return ($b) ? is_bool($a) 			: 	!is_bool($a);
-		case 'obj':
-			return ($b) ? is_object($a) 		: 	!is_object($a);
-		case 'num':
-			return ($b) ? is_numeric($a) 		: 	!is_object($a);
-		case 'flt':
-			return ($b) ? is_float($a) 		: 	!is_object($a);
-		case 'int':
-			return ($b) ? is_int($a) 			: 	!is_object($a);
-		case 'scl':
-			return ($b) ? is_scalar($a) 		: 	!is_object($a);
-		case 'nll':
-			return ($b) ? ($a === null) 		: ($a !== null);
-		case 'tru':
-			return ($b) ? ($a === true) 		: ($a === false);
-		case 'tof':
-			return ($b) ? ($a) 				: (!$a);
-		case 'bte':
-			return ($a < $N && $N < $b);
-		case 'bti':
-			return ($a <= $N && $N <= $b);
-		case '===':
-			return ($a === $b);
-		case '!==':
-			return ($a !== $b);
-		case '!=':
-			return ($a != $b);
-		case '<':
-			return ($a < $b);
-		case '>':
-			return ($a > $b);
-		case '>=':
-			return ($a >= $b);
-		case '<=':
-			return ($a <= $b);
-		case 'fit':
-			return ($a % $b === 0);
-		case 'has':
-			return (is_string($a) && (strpos($a, $b) !== false));
-		case '!has':
-			return (is_string($a) && (strpos($a, $b) === false));
-		default:
-			return ($a == $b);
 	}
 }
 
@@ -1167,4 +1139,3 @@ class  FD extends RMLDO
 		$this->size(true);
 	}
 }
-?>
