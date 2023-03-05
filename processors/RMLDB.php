@@ -65,6 +65,7 @@ class DB
 	protected $db_dsn	= null;
 	protected $dbhs 	= array();
 	protected $error 	= array();
+	protected $hasErr;
 
 
 	function __construct($db_name = DBNAME, $user = UACC,  $password = UPASS, $db_host = 'localhost',  $db_type = 'mysql')
@@ -111,20 +112,25 @@ class DB
 		}
 		return $this;
 	}
-	
-	function has_err($dbh=null){
-		if ($dbh === null ){ return $this->hasErr; }
-		return isset($this->hasErr[$dbh]) ?  $this->hasErr[$dbh] : null;	
+
+	function has_err($dbh = null)
+	{
+		if ($dbh === null) {
+			return $this->hasErr;
+		}
+		return isset($this->hasErr[$dbh]) ?  $this->hasErr[$dbh] : null;
 	}
-	
-	protected function clear_err($dbh){
+
+	protected function clear_err($dbh)
+	{
 		unset($this->hasErr[$dbh]);
 	}
-	
-	protected function set_err($dbh,$err){
+
+	protected function set_err($dbh, $err)
+	{
 		$this->hasErr[$dbh] = $err;
 	}
-	
+
 	function close($dbh = '_default')
 	{
 		if (is_scalar($dbh)) {
@@ -396,7 +402,7 @@ function sql_U_str($table, $cols, $where, array $args = array())
 { ///
 	$args['w'] = $where;
 	$args['c'] = $cols;
-	return sql_str('c', $table, $args);
+	return sql_str('u', $table, $args);
 }
 function sql_D_str($table, $where, $lim = null, $ord = null)
 {
@@ -409,4 +415,3 @@ function sql_p_str($table)
 
 
 DB_hub::create();
-?>
