@@ -415,3 +415,79 @@ function sql_p_str($table)
 
 
 DB_hub::create();
+
+
+class pKey
+{
+	protected static $init = false;
+	protected static $conn = null;
+	protected static $pKeys = array();
+	protected static $tables = array();
+	protected static $vRefs = array();
+	protected static $cache = array();
+
+
+	protected static function _KeyFor($table)
+	{
+		if (isset(self::$cache[$table])) {
+			return  self::$cache[$table];
+		} // if table has been checked, abort
+		if (!self::$conn === null) {
+			self::$conn = new DB();
+		}
+		if (self::$conn) { // if no nonnection, continue.
+			$q = new DB_query("SHOW INDEX FROM $table WHERE Key_name = 'PRIMARY';", self::$conn);
+			$row = $q->run(null)->fetch(PDO::FETCH_ASSOC);
+			if ($row) {
+				self::$pKeys[$row['Table']] = $row['Column_name'];
+				self::$tables[$row['Column_name']][] = $row['Table'];
+				self::$cache[$table] = true;
+				return true;
+			}
+			self::$cache[$table] = false;
+		}
+		return false;
+	}
+	static function setV($t, $r = false)
+	{
+		if (is_array($t)) {
+			foreach ($t as $Tt => $Tr) {
+				if (is_string($Tr)) {
+					$exists = self::checkCache($Tt);
+					if ($exists) {
+						self::$vRefs[$Tr] = $Tt;
+					}
+				}
+			}
+		} elseif (is_string($r) && is_string($t)) {
+			$exists = self::checkCache($t);
+			if ($exists) {
+				self::$vRefs[$r] = $t;
+			}
+		}
+	}
+	static function getV($r, $b = false)
+	{ //$r = reference; $b = (bool) both?
+		$t = isset(self::$vRefs[$r]) ? self::$vRefs[$r] : false;  // the table's reference var
+		if (!$b) {
+			return $t;
+		} elseif ($t) { // will return both table AND pKey
+			$k = self::getK($t);
+			return array('k' => $k, 't' => $t);
+		}
+		return false;
+	}
+
+	static function getK($t)
+	{
+		$tExists = self::checkCache($t);
+		return $tExists  ?  self::$pKeys[$t] : false;
+	}
+	protected static function checkCache($t)
+	{			// checks if the table has been asked for before, if not  it initializes it
+		if (!isset(self::$cache[$t])) {
+			self::$cache[$t] =  self::_KeyFor($t);  	// initialize table & log intialization in cache
+		}
+		return self::$cache[$t];
+	}
+}

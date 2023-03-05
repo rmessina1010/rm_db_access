@@ -126,12 +126,12 @@ function rm_fooArgs($args = array(), $defaults = array(), $minArgCt = 0, $userAr
 
 function nameMap($data,   $keyMap, $alias = false, $bef = '', $aft = '')
 {
-	if (is_string($keyMap)) {
-		$keyMap =   rm_keyMaps::getMap($keyMap);
-		if (!$keyMap) {
-			return;
-		}
-	}
+	// if (is_string($keyMap)) {
+	// 	$keyMap =   rm_keyMaps::getMap($keyMap);
+	// 	if (!$keyMap) {
+	// 		return;
+	// 	}
+	// }
 	if ($alias) {
 		if ($data instanceof RMCO) {
 			return $data->the_($keyMap[$alias], $bef, $aft);
