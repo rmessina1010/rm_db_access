@@ -167,3 +167,39 @@ function rm_scrOffset($txt, $href = false)
 	}
 	return $txt;
 }
+
+function rm_parse_debugDump($stmt)
+{
+	ob_start();
+	$stmt->debugDumpParams();
+	$r =  ob_get_contents();
+	ob_end_clean();
+	preg_match_all('/(?:Key: (?:Name: \[\d+\] |Position #(\d+)):(\w+)*)/', $r, $matches);
+	$numbered = array();
+	$named = array();
+	foreach ($matches[1] as $k => $v) {
+		if ($v !== "") {
+			$numbered[] = null;
+		} else {
+			$named[$matches[2][$k]] = null;
+		}
+	}
+	return array('named' => $named, 'numbered' => $numbered);
+}
+
+function rm_parse_qry($qry)
+{
+	preg_match_all('/\:\?/', $qry, $matches);
+	$numbered = $matches[0] ? array_fill(0, count($matches[0]), null) : array();
+	preg_match_all('/\:(\w+)/', $qry, $matches);
+	$named = $matches[1] ? array_combine($matches[1], array_fill(0, count($matches[1]), null)) : array();
+	return array('named' => $named, 'numbered' => $numbered);
+}
+
+function rm_param_format($touple, $matrix = false)
+{
+	$numbered = isset($touple['numbered']) ? $touple['numbered'] : array();
+	$named = isset($touple['named']) ? $touple['named'] : array();
+	$params = array_merge($numbered, $named);
+	return  $matrix ?  $params : array_keys($params);
+}
