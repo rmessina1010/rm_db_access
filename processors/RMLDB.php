@@ -209,6 +209,16 @@ class DB_query
 		return array_keys($this->holders);
 	}
 
+	function list_params()
+	{  ///
+		return array_keys($this->holders);
+	}
+
+	function matix_params()
+	{  ///
+		return $this->holders;
+	}
+
 	function has_holder($key)
 	{
 		return isset($this->holders[$key]);
