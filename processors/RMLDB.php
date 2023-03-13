@@ -1,5 +1,6 @@
 <?
 require_once 'settings.php';
+require_once '../includes/functions/core_foos.php';
 
 class  DB_hub
 {
@@ -152,7 +153,7 @@ class DB_query
 	protected $is_posit	= true;
 	protected $hold_ct	= 0;
 	protected $params	= null;
-
+	protected $hasErr 	= null; ///// ???
 
 	function __construct($query, $dbh, array $attributes = array())
 	{
@@ -163,19 +164,24 @@ class DB_query
 
 	function prep($query, array $attributes = array())
 	{
-		$this->hold_ct 	= preg_match_all("/:\w+/", $query, $matches);
-		$this->is_posit	= !($this->hold_ct > 0);
-		$holders		= ($matches && $matches[0]) ?  $matches[0] : array();
-		if ($this->is_posit) {
-			$query = str_replace(':?', '?', $query, $count);
-			$this->hold_ct = $count;
-			$this->holders = $count > 0 ? array_fill(1, $count, true) : array();
-		} else {
-			$this->holders	= ($matches && $matches[0]) ?  array_flip($matches[0]) : array();
+		$mix = isset($attributes['mix']) && $attributes['mix'];
+		if (isset($attributes['mix'])){ unset($attributes['mix']) ;}
+		$pre_params		= rm_parse_qry($query);
+		$this->is_posit	= !empty($pre_params['numbered']);
+		if ($this->is_posit && !empty($pre_params['named'])){
+			if ($mixed){
+				$this->is_posit	= false;
+				foreach  ($pre_params['numbered'] as $n=>$junk){
+					$query = substr_replace($query, ":".$n, strpos($query, ":?"), 2);
+				}
+			}else{
+				/// error handling will go here
+			}
 		}
-		$this->query  	= $query;
-		$this->STMNT  = $this->dbh->prepare($query, $attributes);
-
+		$this->query  	= ($this->is_posit) ? str_replace(':?', '?', $query) : $query;
+		$this->holders	= rm_param_format($pre_params, true);
+		$this->hold_ct 	= count($this->holders);
+		$this->STMNT  	= $this->dbh->prepare($this->query, $attributes);
 		return $this;
 	}
 
