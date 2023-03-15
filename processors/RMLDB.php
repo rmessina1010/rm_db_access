@@ -164,17 +164,19 @@ class DB_query
 
 	function prep($query, array $attributes = array())
 	{
-		$mix = isset($attributes['mix']) && $attributes['mix'];
-		if (isset($attributes['mix'])){ unset($attributes['mix']) ;}
+		$mixed = isset($attributes['mix']) && $attributes['mix'];
+		if (isset($attributes['mix'])) {
+			unset($attributes['mix']);
+		}
 		$pre_params		= rm_parse_qry($query);
 		$this->is_posit	= !empty($pre_params['numbered']);
-		if ($this->is_posit && !empty($pre_params['named'])){
-			if ($mixed){
+		if ($this->is_posit && !empty($pre_params['named'])) {
+			if ($mixed) {
 				$this->is_posit	= false;
-				foreach  ($pre_params['numbered'] as $n=>$junk){
-					$query = substr_replace($query, ":".$n, strpos($query, ":?"), 2);
+				foreach ($pre_params['numbered'] as $n => $junk) {
+					$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
 				}
-			}else{
+			} else {
 				/// error handling will go here
 			}
 		}
