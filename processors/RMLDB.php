@@ -249,17 +249,13 @@ class DB_query
 		return $this->STMNT;
 	}
 
-	function run($data = null)
+	function run($data = null, $reset = false)
 	{
 		if ($this->STMNT) {
-			if (is_array($data) || $data === true) {
-				if (is_array($data)) {
-					$this->args = rm_whitelist($data, $this->params);
-				}
-				$this->STMNT->execute($this->args);
-			} else {
-				$this->STMNT->execute();
+			if (is_array($data)) {
+				$this->args = rm_whitelist($data, (!$this->args || $reset) ? $this->params : $this->args);
 			}
+			$this->STMNT->execute($this->args);
 		}
 		return $this->STMNT;
 	}
