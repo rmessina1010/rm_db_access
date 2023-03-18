@@ -1,27 +1,23 @@
 <?
-	function rm_whitelist( array $arr, array $allowed, $def = false){
-		return $def  ?  	array_intersect_key($arr, array_flip($allowed)): array_intersect_key($arr,  $allowed) + $allowed ;
-	 }
-
  	function rm_base_array($default,$fill=false, $data =false){
-	 	if (is_string($default)){  
+	 	if (is_string($default)){
 		 	$default = explode(',', $default);
 		}
 		$default = array_values($default);
 		$baseArr = array();
-		for ($i=0, $l=count($default); $i<$l;$i++){ 
-			$baseArr[trim($default[$i])] = $fill; 
+		for ($i=0, $l=count($default); $i<$l;$i++){
+			$baseArr[trim($default[$i])] = $fill;
 		}
- 	 	if (is_array($data)){ 
+ 	 	if (is_array($data)){
 	 	 	$baseArr = rm_base_array_fill( $baseArr, $data);
 	 	}
 	 	return $baseArr;
  	}
- 	
+
  	function rm_base_array_fill(array $base, array $fill){
 	 	return array_intersect_key($fill, $base) + $base ;
  	}
- 	
+
 
 	function rm_ph_replace($str, array $data=array(),$o='{{',$c='}}' ){ // lite version of insertFromField()
 		  $firstDel=strstr($str, $o);
@@ -30,12 +26,12 @@
 		  $c= (strpos($c.$c,"#") !== false) ? str_replace("#", "\#", $c) : $c;
 		  $regex='#'.$o.'([\w-@\#\$\!\|&~\^\+\*\\\/]*)'.$c.'#';
   		  preg_match_all($regex, $str, $holders);
-		  foreach ($holders[1] as $k=>$v){  
+		  foreach ($holders[1] as $k=>$v){
 			  if (isset($data[$holders[1][$k]])) { $str=str_replace($holders[0][$k], $data[$holders[1][$k]] ,$str );}
 		  }
 		  return $str;
  	}
- 
+
     function rm_vsprintf_assoc($string, $array){
 	   if (!is_scalar($string)) { return  $string;  }
 	   if (is_object($array)) { $data = get_object_vars($data);  }
@@ -57,7 +53,7 @@
 	   }
 	   return vsprintf($string, $data);
 	}
-	
+
 function rm_scrub_empty_tags($html,$args =false){
     $nbsp  = !isset($args['nbsp']) || $args['nbsp'] ? '\s*(?:&nbsp;\s*)*':'\s*' ;
     $attrs = isset($args['attr']) && $args['attr'] ?    '' : '[^>]*' ;
@@ -75,7 +71,7 @@ function rm_scrub_tags($html,$tag='style|script'){
 }
 
 function rm_sani_attrs($html,array $allow =array()){
-	
+
 	$opts = array (
 			'css'=> array (  'class'=>1 ,'id'=>1, 'style'=>1),
 			'mouse'=> array ( 'up'=>1 ,'down'=>1, 'enter'=>1, 'leave'=>1, 'over'=>1, 'out'=>1),
@@ -113,4 +109,3 @@ function rm_sani_attrs($html,array $allow =array()){
   	$html = $htm ? :$html;
  	return $html;
 }
-?>

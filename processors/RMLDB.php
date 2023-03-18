@@ -252,8 +252,11 @@ class DB_query
 	function run($data = null)
 	{
 		if ($this->STMNT) {
-			if (is_array($data)) {
-				$this->STMNT->execute($data);
+			if (is_array($data) || $data === true) {
+				if (is_array($data)) {
+					$this->args = rm_whitelist($data, $this->params);
+				}
+				$this->STMNT->execute($this->args);
 			} else {
 				$this->STMNT->execute();
 			}

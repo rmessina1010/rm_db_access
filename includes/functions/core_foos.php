@@ -203,3 +203,8 @@ function rm_param_format($touple, $matrix = false)
 	$params = array_merge($numbered, $named);
 	return  $matrix ?  $params : array_keys($params);
 }
+
+function rm_whitelist(array $arr, array $allowed, $def = false)
+{
+	return $def  ?  	array_intersect_key($arr, array_flip($allowed)) : array_intersect_key($arr,  $allowed) + $allowed;
+}
