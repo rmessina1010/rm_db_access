@@ -212,24 +212,29 @@ class DB_query
 		return $this;
 	}
 
-	function list_holders()
-	{
-		return array_keys($this->holders);
-	}
-
 	function list_params()
-	{  ///
-		return array_keys($this->holders);
-	}
-
-	function matix_params()
-	{  ///
-		return $this->holders;
-	}
-
-	function has_holder($key)
 	{
-		return isset($this->holders[$key]);
+		return array_keys($this->params);
+	}
+
+	function param_matrix()
+	{
+		return $this->params;
+	}
+
+	function get_args()
+	{
+		return $this->args;
+	}
+
+	function get_arg($key)
+	{
+		return is_scalar($key) && isset($this->args[$key]) ? $this->args[$key] : null;
+	}
+
+	function has_param($key)
+	{
+		return isset($this->params[$key]);
 	}
 
 	function is_positional()
@@ -237,12 +242,13 @@ class DB_query
 		return $this->is_posit;
 	}
 
-	// function set_params(array $params =array(),$type ='PARAM_STR'){////complete later
-	// 	foreach ($params as $col=>$val ) {
-	// 		$this->bindVal();
-	// 	}
-	// 	return $this;
-	// }
+	function set_args($args, $reset = false)
+	{
+		if (is_array($args)) {
+			$this->args = rm_whitelist($args, (!$this->args || $reset) ? $this->params : $this->args);
+		}
+		return $this;
+	}
 
 	function STMNT()
 	{
@@ -252,9 +258,7 @@ class DB_query
 	function run($data = null, $reset = false)
 	{
 		if ($this->STMNT) {
-			if (is_array($data)) {
-				$this->args = rm_whitelist($data, (!$this->args || $reset) ? $this->params : $this->args);
-			}
+			$this->set_args($data, $reset);
 			$this->STMNT->execute($this->args);
 		}
 		return $this->STMNT;
