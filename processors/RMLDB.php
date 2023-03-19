@@ -173,9 +173,13 @@ class DB_query
 		if ($this->is_posit && !empty($pre_params['named'])) {
 			if ($mixed) {
 				$this->is_posit	= false;
-				foreach ($pre_params['numbered'] as $n => $junk) {
-					$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
-				}
+				// convert to proper ordered query
+				$query = str_replace($query, ":?", "?");
+				// Unfortunately, the following does not work
+				// :0 is not the same as 0, even tho :x  acts like x
+				// foreach ($pre_params['numbered'] as $n => $junk) {
+				// 	$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
+				// }
 			} else {
 				/// error handling will go here
 			}
