@@ -164,29 +164,23 @@ class DB_query
 
 	function prep($query, array $attributes = array())
 	{
-		$mixed = isset($attributes['mix']) && $attributes['mix'];
-		if (isset($attributes['mix'])) {
-			unset($attributes['mix']);
-		}
 		$pre_params		= rm_parse_qry($query);
 		$this->is_posit	= !empty($pre_params['numbered']);
-		if ($this->is_posit && !empty($pre_params['named'])) {
-			if ($mixed) {
-				$this->is_posit	= false;
-				// convert to proper ordered query
+		if ($this->is_posit) {
+			if (empty($pre_params['named'])) {
 				$query = str_replace($query, ":?", "?");
-				// Unfortunately, the following does not work
-				// :0 is not the same as 0, even tho :x  acts like x
-				// foreach ($pre_params['numbered'] as $n => $junk) {
-				// 	$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
-				// }
 			} else {
-				/// error handling will go here
+				$this->is_posit	= null;
+				foreach ($pre_params['numbered'] as $n => $junk) {
+					$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
+					$pre_params['named'][':' . $n] = null;
+				}
 			}
+			$pre_params['numbered'] = array();
 		}
-		$this->query  	= ($this->is_posit) ? str_replace(':?', '?', $query) : $query;
+		$this->query  	= $query;
 		$this->holders	= rm_param_format($pre_params, true);
-		$this->hold_ct 	= count($this->holders);
+		$this->hold_ct 	= count($this->holders); /// move up, if needed;
 		$this->STMNT  	= $this->dbh->prepare($this->query, $attributes);
 		return $this;
 	}
@@ -216,6 +210,14 @@ class DB_query
 		return $this;
 	}
 
+	function normalize_mixed_params($key)
+	{
+		if ($this->is_posit === null && preg_match("/^\d+$/", $key . '')) {
+			return ':' . $key;
+		}
+		return $key;
+	}
+
 	function list_params()
 	{
 		return array_keys($this->params);
@@ -233,11 +235,13 @@ class DB_query
 
 	function get_arg($key)
 	{
-		return is_scalar($key) && isset($this->args[$key]) ? $this->args[$key] : null;
+		$key = $this->normalize_mixed_params($key);
+		return isset($this->args[$key]) ? $this->args[$key] : null;
 	}
 
 	function has_param($key)
 	{
+		$key = $this->normalize_mixed_params($key);
 		return isset($this->params[$key]);
 	}
 
@@ -249,6 +253,13 @@ class DB_query
 	function set_args($args, $reset = false)
 	{
 		if (is_array($args)) {
+			if ($this->is_posit === null) {
+				$newArr = array();
+				foreach ($args as $k => $v) {
+					$newArr[$this->normalize_mixed_params($k)] = $v;
+				}
+				$args = $newArr;
+			}
 			$this->args = rm_whitelist($args, (!$this->args || $reset) ? $this->params : $this->args);
 		}
 		return $this;
