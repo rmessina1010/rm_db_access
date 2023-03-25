@@ -5,7 +5,7 @@ require_once './includes/functions/core_foos.php';
 
 class RMLDO
 {
-	protected $_TheData 	= array();
+	protected $_theData 	= array();
 	protected $_pointer		= 0;
 	protected $_theSize		= 0;
 	protected $_columns		= array();
@@ -19,7 +19,7 @@ class RMLDO
 	protected $_indexMap 	= null;   	// added sept 2020
 	protected $_indexKey 	= null;  	// added sept 2020
 
-	protected $_keyMap		= false;
+	protected $_keyMap		= array();
 	protected $_hlev		= 0;
 	var		  $loop 		= false;
 	var		  $indent 		= 0;
@@ -136,7 +136,7 @@ class RMLDO
 		if (!is_array($data)) {
 			$data = array();
 		}
-		$this->_TheData = array_values($data);
+		$this->_theData = array_values($data);
 		$this->setColumns();
 		$this->calcSize();
 		$this->resetPointer();
@@ -146,12 +146,12 @@ class RMLDO
 
 	protected function calcSize()
 	{
-		$this->_theSize	= count($this->_TheData);
+		$this->_theSize	= count($this->_theData);
 	}
 
 	protected function setColumns()
 	{
-		$this->_columns = $this->_TheData ? array_keys($this->_TheData[0]) : array();
+		$this->_columns = $this->_theData ? array_keys($this->_theData[0]) : array();
 	}
 
 	protected function run_filters($value, $filt = array(), $filtArgs = array())
@@ -212,7 +212,7 @@ class RMLDO
 			$this->resetPointer();
 		} else {
 			$newPointer = ($rstPointer === NULL) ? $this->_pointer : $this->_pointer + $offset;
-			if (isset($this->_TheData[$newPointer])) {
+			if (isset($this->_theData[$newPointer])) {
 				$this->_pointer = $this->applyClamp($newPointer);
 			}/*moves pointer to*/
 		}
@@ -227,33 +227,33 @@ class RMLDO
 	{
 		$this->_pointer 	= $this->applyClamp($rev ? $this->_theSize - 1 : 0);
 		$this->_isLooping 	=  false;
-		$this->_current 	= isset($this->_TheData[$this->_pointer]) ? $this->_TheData[$this->_pointer] : null;
+		$this->_current 	= isset($this->_theData[$this->_pointer]) ? $this->_theData[$this->_pointer] : null;
 	}
 	function res($row = 0, $key = null)
 	{ /// added for the sake of compatibility with RMCO
 		if ($row === null) {
-			return $this->_TheData;
+			return $this->_theData;
 		}
-		if ($key !== null && isset($this->_TheData[$row][$key])) {
-			return $this->_TheData[$row][$key];
+		if ($key !== null && isset($this->_theData[$row][$key])) {
+			return $this->_theData[$row][$key];
 		}
-		if (isset($this->_TheData[$row])) {
-			return $this->_TheData[$row];
+		if (isset($this->_theData[$row])) {
+			return $this->_theData[$row];
 		}
 	}
 
 	function dump($i = null, $l = null)
 	{
 		if ($i !== null) {
-			return array_slice($this->_TheData, $i, $l);
+			return array_slice($this->_theData, $i, $l);
 		}
-		return $this->_TheData;
+		return $this->_theData;
 	}
 	function alter($key, $val, $at = null, $offset = false, $loop = null)
 	{  ////
 		$index = $this->indexHandler($at, $offset, $loop);
-		if (isset($this->_TheData[$index][$key])) {
-			$this->_TheData[$index][$key] = $val;
+		if (isset($this->_theData[$index][$key])) {
+			$this->_theData[$index][$key] = $val;
 			if ($this->_indexKey === $key) {
 				$this->updateIndex($this->_indexKey, $val);
 			}
@@ -263,8 +263,8 @@ class RMLDO
 	{  /////
 		$index = $this->indexHandler($at, $offset, $loop);
 		foreach ($row as $key => $val) {
-			if (isset($this->_TheData[$index][$key])) {
-				$this->_TheData[$index][$key] = $val;
+			if (isset($this->_theData[$index][$key])) {
+				$this->_theData[$index][$key] = $val;
 				if ($this->_indexKey === $key) {
 					$this->updateIndex($this->_indexKey, $val);
 				}
@@ -390,7 +390,7 @@ class RMLDO
 		//$theRow =  $this->theLoop($theRow,$loop);
 		$theRow = ($fxo !== null) ? $this->indexHandler($fxo, $offset, $loop) : $this->theLoop($this->_pointer + $offset, $loop);
 		$key = $this->_keyMapCol($key, $mapped);
-		$value = isset($this->_TheData[$theRow][$key]) ? $this->_TheData[$theRow][$key] : (isset($def_row[$key]) ? $def_row[$key] : NULL);
+		$value = isset($this->_theData[$theRow][$key]) ? $this->_theData[$theRow][$key] : (isset($def_row[$key]) ? $def_row[$key] : NULL);
 		if ($bef === null) {
 			return $value;
 		}
@@ -427,10 +427,10 @@ class RMLDO
 	{
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
 		$point = $this->theLoop($this->_pointer + $step, $loop, false);
-		if ($this->_current  ||  $this->_TheData[$point]) {
+		if ($this->_current  ||  $this->_theData[$point]) {
 			$this->_pointer  = $point;
 		}
-		$this->_current =  $this->_TheData[$point]  ? $this->_TheData[$point] : false;
+		$this->_current =  $this->_theData[$point]  ? $this->_theData[$point] : false;
 		return $this->thisRow($omit, $map, $sc);
 	}
 
@@ -441,13 +441,13 @@ class RMLDO
 		$key = $this->theLoop($key,$loop);
 		 **/
 		$key = $this->indexHandler($at, $offset, $loop);
-		if (isset($this->_TheData[$key])) {
+		if (isset($this->_theData[$key])) {
 			if ($move) {
 				$this->_pointer = $this->applyClamp($key);
-				$this->_current = $this->_TheData[$key];
+				$this->_current = $this->_theData[$key];
 			}
 
-			$ROW = ($omit && is_array($omit)) ?  $this->omit($this->_TheData[$key], $omit, $map) : $this->_TheData[$key];
+			$ROW = ($omit && is_array($omit)) ?  $this->omit($this->_theData[$key], $omit, $map) : $this->_theData[$key];
 			if (is_array($sc)) {
 				$ROW = $this->run_sc_row($ROW, $sc);
 			}
@@ -509,7 +509,7 @@ class RMLDO
 	function checkRow($line, $cheker = array(), $loop = NULL, $offset = false)
 	{  /////
 		if (is_integer($line)) { // if it's passed a #, infer it's a row location in _theData
-			$line = $this->_TheData[$this->indexHandler($line, $offset, $loop)]; //[$this->theLoop($line,$loop)];
+			$line = $this->_theData[$this->indexHandler($line, $offset, $loop)]; //[$this->theLoop($line,$loop)];
 		}
 		$key = (isset($cheker['k'])) ? $cheker['k'] : $this->check1;
 		$val = (isset($cheker['v'])) ? $cheker['v'] : $this->check2;
@@ -528,7 +528,7 @@ class RMLDO
 		$this->check1 = $col;
 		$this->check2 = $val;
 		$this->opp = $opp;
-		$finds = array_filter($this->_TheData, array("RMLDO", "checkRow"));
+		$finds = array_filter($this->_theData, array("RMLDO", "checkRow"));
 		if (count($finds) == 1 && (!$Zero)) {
 			$k = array_keys($finds);
 			$temp = $finds[$k[0]];
@@ -564,7 +564,7 @@ class RMLDO
 				return;
 			}
 		}
-		return $foo($this, $this->_TheData[$pointer], $fooArgs, $meta, $output, $loop, $xtra);
+		return $foo($this, $this->_theData[$pointer], $fooArgs, $meta, $output, $loop, $xtra);
 	}
 
 	function iterate($outFoo, $fooArgs = false, array $args = array(), $move = true, $loop = false, $start = NULL, $end = NULL, $step = 1)
@@ -626,9 +626,9 @@ class RMLDO
 				$data = $data[0];
 			}
 			if ($before) {
-				array_unshift($this->_TheData, $data);
+				array_unshift($this->_theData, $data);
 			} else {
-				array_push($this->_TheData, $data);
+				array_push($this->_theData, $data);
 			}
 			$this->adjustMeta($keep, $keepOffset);
 			return  true;
@@ -649,7 +649,7 @@ class RMLDO
 		}
 		$keepOffset = 0;
 		foreach ($key as $k) {
-			unset($this->_TheData[$k]);
+			unset($this->_theData[$k]);
 			if ($k < $this->_pointer) {
 				$keepOffset--;
 			}
@@ -684,7 +684,7 @@ class RMLDO
 	}
 	function isMappedTo($key, $flipped = false)
 	{ /////
-		if (!$this->_keyMap && !$flipped && isset($this->_TheData[0][$key])) {
+		if (!$this->_keyMap && !$flipped && isset($this->_theData[0][$key])) {
 			return $key;
 		}
 		if (is_string($key) && (($flipped && isset($this->_keyMap_inv[$key]))  || (!$flipped && isset($this->_keyMap[$key])))) {
@@ -713,8 +713,8 @@ class RMLDO
 		$end = $this->_theSize - abs($end);
 		$start = $start < 0 ? 0 : $start;
 		for ($i = $start; $i < $end; $i++) {
-			if (isset($this->_TheData[$i][$col])) {
-				$theCol[] = $this->_TheData[$i][$col];
+			if (isset($this->_theData[$i][$col])) {
+				$theCol[] = $this->_theData[$i][$col];
 			}
 		}
 		if ($uniq) {
@@ -742,7 +742,7 @@ class RMLDO
 	{
 		$col = isset($this->_keyMap[$col]) ? $this->_keyMap[$col] : $col;
 		for ($i = 0; $i < $this->_theSize; $i++) {
-			unset($this->_TheData[$i][$col]);
+			unset($this->_theData[$i][$col]);
 		}
 		$colk = array_search($col, $this->_keyMap);
 		unset($this->_columns[$colk]);
@@ -766,7 +766,7 @@ class RMLDO
 			} else {
 				$v =  ($i + (($nColOffset) + $dataSize)) % $dataSize;
 			}
-			$this->_TheData[$i][$col] = $data[$v];
+			$this->_theData[$i][$col] = $data[$v];
 		}
 		$this->_columns[] = $col;
 	}
@@ -803,7 +803,7 @@ class RMLDO
 			$output .= "<tfoot>$fut$futh</tfoot>";
 		}
 		$output .= $hed ? "\t<tbody>\n" : '';
-		foreach ($this->_TheData as $theRow) {
+		foreach ($this->_theData as $theRow) {
 			$output .= "\t\t<tr>\n";
 			$cTag =  ($sideH !== false && $sideH !== null && trim($sideH) !== '')  ? 'th' : 'td';
 			foreach ($theRow as $cellKey => $theCell) {
@@ -827,7 +827,7 @@ class RMLDO
 	{
 		$pointer = ($pointer === NULL) ? $this->_pointer : $this->theLoop($pointer, $loop);
 		$loop = ($loop !== NULL)  ? $loop : $this->loop;  // user varable or (if NULL) instance default
-		return array('pointer' => $pointer, 'isFirst' => ($pointer === 0), 'isLast' => ($pointer === $this->_theSize - 1), 'size' => $this->_theSize, 'isOnly' => ($this->_theSize === 1), 'isEmpty' => ($this->_theSize  < 1), 'inNull' => (!$this->_TheData), 'curr' => $this->_current, 'indnt' => $this->indent);
+		return array('pointer' => $pointer, 'isFirst' => ($pointer === 0), 'isLast' => ($pointer === $this->_theSize - 1), 'size' => $this->_theSize, 'isOnly' => ($this->_theSize === 1), 'isEmpty' => ($this->_theSize  < 1), 'inNull' => (!$this->_theData), 'curr' => $this->_current, 'indnt' => $this->indent);
 	}
 
 	function tableKey()
@@ -856,12 +856,12 @@ class RMLDO
 		$rowDefault = isset($args['def']) ? $args['def'] : null;
 		$row = $this->indexHandler($row, $offset, $loop, array('err' => -2)); // calculates _theData index or returns an index that will evaluate  to false ( so as to return $rowDefault)
 		if ($col === null || $col === false || $col ==  '') {
-			return (isset($this->_TheData[$row])) ? $this->_TheData[$row] : $rowDefault;
+			return (isset($this->_theData[$row])) ? $this->_theData[$row] : $rowDefault;
 		}
 		if ($map) {
 			$col = $this->_keyMapCol($col, $map);
 		}
-		return (isset($this->_TheData[$row][$col])) ? $this->_TheData[$row][$col] : $rowDefault;
+		return (isset($this->_theData[$row][$col])) ? $this->_theData[$row][$col] : $rowDefault;
 	}
 
 	function editRow(array $data, $row = null, $ovrride_map = null, array $args = array())
@@ -870,16 +870,16 @@ class RMLDO
 		$offset = array_key_exists('off', $args)  ? $args['off'] : false;
 		// if ($row === null || $row === false){   $row = $this->_pointer;}
 		$row = $this->indexHandler($row, $offset, $loop, array('err' => -2)); // calculates _theData index or returns an index that will evaluate  to false ( so as to return $rowDefault)
-		if (!isset($this->_TheData[$row])) {
+		if (!isset($this->_theData[$row])) {
 			return;
 		}
-		$oldRow = $this->_TheData[$row];
+		$oldRow = $this->_theData[$row];
 		$toChange = array_intersect_key($data, $oldRow);
 		foreach ($toChange as $key => $val) {
 			if ($ovrride_map !== null) {
 				$key = $this->_keyMapCol($key, $ovrride_map);
 			} ////////
-			$this->_TheData[$row][$key] = $val;
+			$this->_theData[$row][$key] = $val;
 		}
 	}
 
@@ -891,10 +891,10 @@ class RMLDO
 		if ($row === null || $row === false) {
 			$row = $this->_pointer;
 		}
-		if ($preserve && !isset($this->_TheData[$row][$key])) {
+		if ($preserve && !isset($this->_theData[$row][$key])) {
 			return;
 		}
-		$this->_TheData[$row][$key] = $data;
+		$this->_theData[$row][$key] = $data;
 	}
 
 
@@ -966,17 +966,17 @@ class RMLDO
 		$method = (isset($aux_args['ndx']) && $aux_args['ndx'])	?  null	: $offset;
 		//$key = ($offset || $at === null) ?  $this->_pointer + $at :  $at ;
 		$key = $this->indexHandler($at, $method, $loop); ////$this->theLoop($key,$loop);
-		if (!isset($this->_TheData[$key])) {
+		if (!isset($this->_theData[$key])) {
 			return array();
 		}
-		$loopThrough =  $only ? $addTo : $this->_TheData[$key];
+		$loopThrough =  $only ? $addTo : $this->_theData[$key];
 		if (!$no_sc && !$only) {
 			return $loopThrough;
 		}
 		$ROW = array();
 		foreach ($loopThrough as $col => $val) {
 			$col = $this->_keyMapCol($col, $map_to);
-			if (isset($this->_TheData[$key][$col])) {
+			if (isset($this->_theData[$key][$col])) {
 				if (isset($addTo[$col]['false']) && $ROW[$col] === false) {
 					$ROW[$col] = $addTo[$col]['false'];
 				}
@@ -985,7 +985,7 @@ class RMLDO
 				}
 				if (is_scalar($ROW[$col]) && trim($ROW[$col]) !== '') {
 					$sc_args = isset($addTo[$col]['sca']) ?  $addTo[$col]['sca'] : array();
-					$ROW[$col] = $no_sc ? $this->_TheData[$key][$col] : $this->run_sc($this->_TheData[$key][$col], $sc_args);
+					$ROW[$col] = $no_sc ? $this->_theData[$key][$col] : $this->run_sc($this->_theData[$key][$col], $sc_args);
 					if (isset($addTo[$col]['aft'])) {
 						$ROW[$col] =  $ROW[$col] . $addTo[$col]['aft'];
 					}
@@ -1005,10 +1005,10 @@ class RMLDO
 	// added sept 2020
 	protected function mapIndex()
 	{
-		if ((!$this->_indexKey === '0' && !$this->_indexKey) || !$this->_TheData || !array_key_exists($this->_indexKey, $this->_TheData[0])) {
+		if ((!$this->_indexKey === '0' && !$this->_indexKey) || !$this->_theData || !array_key_exists($this->_indexKey, $this->_theData[0])) {
 			return;
 		}
-		$this->_indexMap =  array_flip(array_column($this->_TheData, $this->_indexKey));
+		$this->_indexMap =  array_flip(array_column($this->_theData, $this->_indexKey));
 	}
 
 	function setIndexKey($key = null)
@@ -1060,10 +1060,10 @@ class RMLDO
 			$i = $this->theLoop($i + $this->_pointer, $loop);
 		} elseif ($offset === null) {
 			$ik = $this->indexPos($i);
-			$i = (($this->_indexKey === '0' || $this->_indexKey) &&  $ik !== null && isset($this->_TheData[$ik])) ? $ik : -1;
+			$i = (($this->_indexKey === '0' || $this->_indexKey) &&  $ik !== null && isset($this->_theData[$ik])) ? $ik : -1;
 		} else {
 			$i = ($i === null || $i === false) ? $this->_pointer  : $i + 0;
-			$i = isset($this->_TheData[$i]) ? $i : (isset($args['err']) ? $args['err'] :  $this->_pointer);
+			$i = isset($this->_theData[$i]) ? $i : (isset($args['err']) ? $args['err'] :  $this->_pointer);
 		}
 		if ($set && (!isset($args['err']) || $i !== $args['err'])) {
 			$this->_pointer = $this->applyClamp($i);
@@ -1133,9 +1133,9 @@ class RMLDO
 
 class  FD extends RMLDO
 {
-	function FD($t)
+	function __construct($t)
 	{
-		$this->res = $t;
+		$this->_theData = $t;
 		$this->size(true);
 	}
 }
