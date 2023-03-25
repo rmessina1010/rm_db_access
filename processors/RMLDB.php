@@ -177,6 +177,8 @@ class DB_query
 				}
 			}
 			$pre_params['numbered'] = array();
+		} elseif (strpos(' :0 ', ' ' . implode(array_keys($pre_params['named'], ' ')) . ' ') === false) {
+			$this->is_posit	= null; ///
 		}
 		$this->query  	= $query;
 		$this->holders	= rm_param_format($pre_params, true);
