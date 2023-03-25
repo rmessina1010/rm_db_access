@@ -267,6 +267,19 @@ class DB_query
 		return $this;
 	}
 
+	function set_arg($arg, $val)
+	{
+		$arg = $this->normalize_mixed_params($arg);
+		if (isset($this->params[$arg])) {
+			$this->params[$arg] = $val;
+		}
+	}
+
+	function set_default_args($args)
+	{
+		$this->params = rm_whitelist($args, $this->params);
+	}
+
 	function STMNT()
 	{
 		return $this->STMNT;
