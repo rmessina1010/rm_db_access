@@ -168,7 +168,7 @@ class DB_query
 		$this->is_posit	= !empty($pre_params['numbered']);
 		if ($this->is_posit) {
 			if (empty($pre_params['named'])) {
-				$query = str_replace($query, ":?", "?");
+				$query = str_replace(":?", "?", $query);
 			} else {
 				$this->is_posit	= null;
 				foreach ($pre_params['numbered'] as $n => $junk) {
