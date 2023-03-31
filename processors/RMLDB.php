@@ -175,13 +175,13 @@ class DB_query
 					$query = substr_replace($query, ":" . $n, strpos($query, ":?"), 2);
 					$pre_params['named'][':' . $n] = null;
 				}
+				$pre_params['numbered'] = array();
 			}
-			$pre_params['numbered'] = array();
 		} elseif (strpos(' :0 ', ' ' . implode(array_keys($pre_params['named'], ' ')) . ' ') === false) {
-			$this->is_posit	= null; ///
+			$this->is_posit	= null;
 		}
 		$this->query  	= $query;
-		$this->holders	= rm_param_format($pre_params, true);
+		$this->holders	= $this->params	=  rm_param_format($pre_params, true);
 		$this->hold_ct 	= count($this->holders); /// move up, if needed;
 		$this->STMNT  	= $this->dbh->prepare($this->query, $attributes);
 		return $this;

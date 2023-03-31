@@ -80,14 +80,16 @@ class RMLDO
 				$input = $stmt;
 			}
 		}
+		$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
+		$has_run = false;
 		if ($input instanceof DB_query) {
-			$input = $input->STMNT();
+			$input = $input->run($vars);
+			$has_run = true;
 		}
 		if ($input instanceof PDOStatement) {
 			$this->_STMNTobj = $input;
 			$this->setTable($this->_indexKey);
-			if ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000') {
-				$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
+			if (!$has_run && ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000')) {
 				$this->_STMNTobj->execute($vars);
 			}
 			$input = $this->tryFetch();

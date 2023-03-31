@@ -59,7 +59,7 @@ class RMSO
 
 	function _doQ($data = null)
 	{
-		$data = $data === null ? $this->data :   is_array($data) ? $data : array();
+		$data = $data === null ? $this->data :  (is_array($data) ? $data : array());
 		return $this->OBJ->run($data);
 	}
 	function STMNT()
@@ -139,4 +139,3 @@ function doQ($q, $data = null, $ret = false, $cnn = DBNAME, $cname = '_default')
 	//if ($trns) {$dbh->commit();}
 	return ($ret) ?  $log : false;
 }
-?>
