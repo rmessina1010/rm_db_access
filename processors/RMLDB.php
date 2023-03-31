@@ -1,6 +1,6 @@
 <?
 require_once 'settings.php';
-require_once '../includes/functions/core_foos.php';
+require_once './includes/functions/core_foos.php';
 
 class  DB_hub
 {
@@ -191,8 +191,7 @@ class DB_query
 	function bind_param(&$var, $col, $type = 'STR')
 	{
 		if ($this->STMNT) {
-			$col  =  $this->col_check($col);
-			if ($col) {
+			if ($this->param_check($col)) {
 				$type =  $this->type_check($type);
 				$this->STMNT->bindParam($col, $var, $type);
 			}
@@ -203,8 +202,7 @@ class DB_query
 	function bind_val($val, $col, $type = 'STR')
 	{
 		if ($this->STMNT) {
-			$col  =  $this->col_check($col);
-			if ($col) {
+			if ($this->param_check($col)) {
 				$type =  $this->type_check($type);
 				$this->STMNT->bindValue($col, $val, $type);
 			}
@@ -295,29 +293,10 @@ class DB_query
 	}
 
 
-	protected function col_check($col)
+	protected function param_check($key)
 	{
-		if (is_string($col)) {
-			$col = trim($col);
-		}
-		if (!$this->is_posit) {
-			if (!is_string($col)) {
-				return false;
-			}
-			$col = $col[0] !== ':' ? ':' . $col : $col;
-			if (!isset($this->holders[$col])) {
-				return false;
-			}
-		} else {
-			if (!is_numeric($col)) {
-				return false;
-			}
-			if (is_string($col)) {
-				$col = $col[0] === ':' ? substr($col, 1) : $col;
-			}
-			$col = $col + 0;
-		}
-		return $col;
+		$key = $this->normalize_mixed_params($key);
+		return isset($this->params[$key]) ? $key : null;
 	}
 
 	protected function type_check($type)
