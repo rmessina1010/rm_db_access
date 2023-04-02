@@ -150,7 +150,7 @@ class DB_query
 	protected $STMNT	= null;
 	protected $args		= array();
 	protected $is_posit	= true;
-	protected $hold_ct	= 0;
+	protected $o_params	= 0;
 	protected $params	= null;
 	protected $hasErr 	= null; ///// ???
 
@@ -181,7 +181,7 @@ class DB_query
 		}
 		$this->query  	= $query;
 		$this->params	=  rm_param_format($pre_params, true);
-		$this->hold_ct 	= count($pre_params['numbered']); /// move up, if needed;
+		$this->o_params 	= count($pre_params['numbered']); /// move up, if needed;
 		$this->STMNT  	= $this->dbh->prepare($this->query, $attributes);
 		return $this;
 	}
@@ -305,6 +305,11 @@ class DB_query
 		}
 		$type = 'PARAM_' . strtoupper(trim($type));
 		return constant('PDO::' . $type);
+	}
+
+	function ordered_param_ct()
+	{
+		return $this->o_params;
 	}
 }
 
