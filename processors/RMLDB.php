@@ -149,7 +149,6 @@ class DB_query
 	protected $query	= 	'';
 	protected $STMNT	= null;
 	protected $args		= array();
-	protected $holders	= array();
 	protected $is_posit	= true;
 	protected $hold_ct	= 0;
 	protected $params	= null;
@@ -181,8 +180,8 @@ class DB_query
 			$this->is_posit	= null;
 		}
 		$this->query  	= $query;
-		$this->holders	= $this->params	=  rm_param_format($pre_params, true);
-		$this->hold_ct 	= count($this->holders); /// move up, if needed;
+		$this->params	=  rm_param_format($pre_params, true);
+		$this->hold_ct 	= count($pre_params['numbered']); /// move up, if needed;
 		$this->STMNT  	= $this->dbh->prepare($this->query, $attributes);
 		return $this;
 	}
