@@ -91,6 +91,7 @@ class RMLDO
 			$this->setTable($this->_indexKey);
 			if (!$has_run && ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000')) {
 				$this->_STMNTobj->execute($vars);
+				$this->_args = $vars;
 			}
 			$input = $this->tryFetch();
 		}
@@ -282,11 +283,21 @@ class RMLDO
 	function update(array $data = array())
 	{
 		if ($this->_STMNTobj) {
+			// add white list params
 			$this->_STMNTobj->execute($data);
+			$this->_args = $data;
 			$data = $this->tryFetch();
 		}
 		$this->set_theData($data);
 	}
+
+	function refresh()
+	{
+		if ($this->_STMNTobj && isset($this->_args)) {
+			$this->update($this->_args);
+		}
+	}
+
 
 	function mapColsTo($new = false, $mapTo = false)
 	{
