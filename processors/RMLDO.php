@@ -18,6 +18,8 @@ class RMLDO
 	protected $user_args	= array('sc' => 'apply_sc', 'ck1' => 'check1', 'ck2' => 'check2', 'opp' => 'opp',  'ndt' => 'indent', 'lp' => 'loop', 'ndx' => '_indexKey');
 	protected $_indexMap 	= null;   	// added sept 2020
 	protected $_indexKey 	= null;  	// added sept 2020
+	protected $hold_ct		= null;
+	protected $_args		= null;
 
 	protected $_keyMap		= array();
 	protected $_hlev		= 0;
