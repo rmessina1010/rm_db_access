@@ -85,11 +85,13 @@ class RMLDO
 		if ($input instanceof DB_query) {
 			$input = $input->run($vars);
 			$has_run = true;
+			$this->hold_ct = $input->hold_ct();
 		}
 		if ($input instanceof PDOStatement) {
 			$this->_STMNTobj = $input;
 			$this->setTable($this->_indexKey);
 			if (!$has_run && ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000')) {
+				$this->hold_ct = rm_parse_debugDump($this->_STMNTobj)['numbered'];
 				$this->_STMNTobj->execute($vars);
 				$this->_args = $vars;
 			}
