@@ -292,7 +292,7 @@ class DB_query
 	}
 
 
-	protected function param_check($key)
+	function param_check($key)
 	{
 		$key = $this->normalize_mixed_params($key);
 		return isset($this->params[$key]) ? $key : null;
