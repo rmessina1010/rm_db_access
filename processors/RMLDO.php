@@ -10,6 +10,9 @@ class RMLDO
 	protected $_theSize		= 0;
 	protected $_columns		= array();
 	protected $_STMNTobj	= false;
+	protected $_kind		= null;
+	protected $_source		= null;
+	protected $_keep_source	= null;
 	protected $_current;
 	protected $_isLooping	= false;
 	protected $_table 		= false;
@@ -84,11 +87,13 @@ class RMLDO
 		}
 		$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
 		$has_run = false;
+		$this->_kind = gettype($input);
 		if ($input instanceof DB_query) {
 			$input = $input->run($vars);
 			$has_run = true;
 			$this->hold_ct = $input->hold_ct();
-		}
+			$this->_kind = "DB_query";
+ 		}
 		if ($input instanceof PDOStatement) {
 			$this->_STMNTobj = $input;
 			$this->setTable($this->_indexKey);
@@ -98,6 +103,7 @@ class RMLDO
 				$this->_args = $vars;
 			}
 			$input = $this->tryFetch();
+			$this->_kind = "PDOStatement";
 		}
 		$this->set_theData($input);
 	}
@@ -121,6 +127,9 @@ class RMLDO
 	protected function set_err($err)
 	{
 		$this->error = $err;
+	}
+	function kind(){
+		return $this->_kind;
 	}
 	function has_err()
 	{
