@@ -9,10 +9,8 @@ class RMLDO
 	protected $_pointer		= 0;
 	protected $_theSize		= 0;
 	protected $_columns		= array();
-	protected $_STMNTobj	= false;
-	protected $_kind		= null;
-	protected $_source		= null;
-	protected $_keep_source	= null;
+	protected $_kind		= null;		// added aug 2024
+	protected $_source		= null;		// added aug 2024
 	protected $_current;
 	protected $_isLooping	= false;
 	protected $_table 		= false;
@@ -88,30 +86,41 @@ class RMLDO
 		$vars = (isset($args['vars']) && is_array($args['vars'])) ?  $args['vars'] : array();
 		$has_run = false;
 		$this->_kind = gettype($input);
+		if ($this->_kind === "array"){
+			$this->set_theData($input);
+			return;
+		}
+		$this->setSource($input);
+		$this->_args = $vars;
 		if ($input instanceof DB_query) {
-			$input = $input->run($vars);
-			$has_run = true;
-			$this->hold_ct = $input->hold_ct();
 			$this->_kind = "DB_query";
+			$stmnt = $this->_source->run($this->_args);
+			$this->hold_ct = $stmnt->hold_ct();
  		}
 		if ($input instanceof PDOStatement) {
-			$this->_STMNTobj = $input;
-			$this->setTable($this->_indexKey);
-			if (!$has_run && ($this->_STMNTobj->errorCode() === NULL  || $this->_STMNTobj->errorCode() === '00000')) {
-				$this->hold_ct = rm_parse_debugDump($this->_STMNTobj)['numbered'];
-				$this->_STMNTobj->execute($vars);
-				$this->_args = $vars;
-			}
-			$input = $this->tryFetch();
 			$this->_kind = "PDOStatement";
+			$stmnt = $this->_source;
+			if ($stmnt->errorCode() === NULL  || $stmnt->errorCode() === '00000') {
+				$this->hold_ct = rm_parse_debugDump($stmnt)['numbered'];
+				$stmnt->execute($this->_args);
+			}
 		}
-		$this->set_theData($input);
+		$this->setTable($this->_indexKey);
+		$theData = $this->tryFetch($stmnt);
+		$this->set_theData($theData);
 	}
-
-	protected function tryFetch()
+	
+	protected function setSource($input){
+		$this->_source =  ($this->_kind === "array") ? null : $input;
+	}
+	function getSource(){
+ 		return ($this->_kind  === "array") ?  $this->_theData : $this->_source;
+	}
+	
+	protected function tryFetch($stmnt)
 	{
 		try {
-			$r = $this->_STMNTobj->fetchAll(PDO::FETCH_ASSOC);
+			$r = $stmnt->fetchAll(PDO::FETCH_ASSOC);
 			$this->clear_err();
 			return  $r ?  $r : array();
 		} catch (Exception $e) {
@@ -131,6 +140,9 @@ class RMLDO
 	function kind(){
 		return $this->_kind;
 	}
+	function source(){
+		return $this->_source;
+	}
 	function has_err()
 	{
 		return $this->error || false;
@@ -138,7 +150,7 @@ class RMLDO
 
 	protected function setTable($fallback_key = false)
 	{
-		preg_match_all('/(?:FROM +\(?`?)((?!SELECT )[\w$\x{00C0}-\x{00FF}]*)/i', $this->_STMNTobj->queryString, $matches);
+		preg_match_all('/(?:FROM +\(?`?)((?!SELECT )[\w$\x{00C0}-\x{00FF}]*)/i', $this->Q(), $matches);
 		if (!isset($matches[1])) {
 			$this->_pKey = $this->_table = false;
 			return;
@@ -290,27 +302,32 @@ class RMLDO
 
 	function Q()
 	{
-		return $this->_STMNTobj ? $this->_STMNTobj->queryString : null;
+		if ($this->_kind === "PDOStatement") { return $this->_source->queryString ;}
+		if ($this->_kind === "DB_query"){ return  $this->_source->query; }
+		return  null;
 	}
 
 	function update(array $data = array())
 	{
-		if ($this->_STMNTobj) {
-			// add white list params
-			$this->_STMNTobj->execute($data);
+		if ($this->_kind === "DB_query" || $this->_kind === "PDOStatement"){
+			// TO DO: add white list params
 			$this->_args = $data;
-			$data = $this->tryFetch();
+			if ($this->_kind === "PDOStatement")  {
+				$stmt = $this->_source;
+				$stmt->execute($data);
+			}
+			if ($this->_kind === "DB_query"){
+				$stmt = $this->_source->run($data);
+			}
+			$data = $this->tryFetch($stmt);
+			$this->set_theData($data);
 		}
-		$this->set_theData($data);
 	}
 
 	function refresh()
-	{
-		if ($this->_STMNTobj && isset($this->_args)) {
-			$this->update($this->_args);
-		}
+	{ 
+		if (isset($this->_args)) { $this->update($this->_args);}
 	}
-
 
 	function mapColsTo($new = false, $mapTo = false)
 	{
@@ -341,7 +358,6 @@ class RMLDO
 			}
 		}
 	}
-
 
 
 	function _keyMapCol($tag, $ovrride_map = false)
