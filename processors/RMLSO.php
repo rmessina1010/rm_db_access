@@ -1,5 +1,5 @@
 <?
-require_once 'RMLDB.php';
+require_once  __DIR__.'/RMLDB.php';
 
 class RMSO
 {

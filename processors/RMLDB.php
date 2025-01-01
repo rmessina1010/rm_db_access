@@ -1,6 +1,6 @@
 <?
-require_once 'settings.php';
-require_once './includes/functions/core_foos.php';
+require_once __DIR__.'/settings.php';
+require_once __DIR__.'/../includes/functions/core_foos.php';
 
 class  DB_hub
 {
@@ -290,7 +290,9 @@ class DB_query
 		}
 		return $this->STMNT;
 	}
-
+	function Q(){
+		return  $this->query;
+	}
 
 	function param_check($key)
 	{

@@ -1,7 +1,7 @@
 <?
-require_once 'RMLDB.php';
-require_once './includes/functions/sc_process_fn.php';
-require_once './includes/functions/core_foos.php';
+require_once __DIR__.'/RMLDB.php';
+require_once __DIR__.'/../includes/functions/sc_process_fn.php';
+require_once __DIR__.'/../includes/functions/core_foos.php';
 
 class RMLDO
 {
@@ -92,16 +92,16 @@ class RMLDO
 		}
 		$this->setSource($input);
 		$this->_args = $vars;
-		if ($input instanceof DB_query) {
+		if ($this->_source instanceof DB_query) {
 			$this->_kind = "DB_query";
 			$stmnt = $this->_source->run($this->_args);
-			$this->hold_ct = $stmnt->hold_ct();
+			$this->hold_ct = $this->_source->ordered_param_ct();
  		}
-		if ($input instanceof PDOStatement) {
+		if ($this->_source instanceof PDOStatement) {
 			$this->_kind = "PDOStatement";
 			$stmnt = $this->_source;
-			if ($stmnt->errorCode() === NULL  || $stmnt->errorCode() === '00000') {
-				$this->hold_ct = rm_parse_debugDump($stmnt)['numbered'];
+			$this->hold_ct = rm_parse_debugDump($stmnt)['numbered'];
+			if ($stmnt->errorCode() === NULL  /* || $stmnt->errorCode() === '00000' */) {
 				$stmnt->execute($this->_args);
 			}
 		}
@@ -303,7 +303,7 @@ class RMLDO
 	function Q()
 	{
 		if ($this->_kind === "PDOStatement") { return $this->_source->queryString ;}
-		if ($this->_kind === "DB_query"){ return  $this->_source->query; }
+		if ($this->_kind === "DB_query"){ return  $this->_source->Q(); }
 		return  null;
 	}
 
