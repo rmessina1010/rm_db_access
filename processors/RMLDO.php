@@ -1,7 +1,7 @@
 <?
-require_once __DIR__.'/RMLDB.php';
-require_once __DIR__.'/../includes/functions/sc_process_fn.php';
-require_once __DIR__.'/../includes/functions/core_foos.php';
+require_once 'RMLDB.php';
+require_once ROOT_PATH.'/rm_db_access/includes/functions/sc_process_fn.php';
+require_once ROOT_PATH.'/rm_db_access/includes/functions/core_foos.php';
 
 class RMLDO
 {
@@ -92,12 +92,12 @@ class RMLDO
 		}
 		$this->setSource($input);
 		$this->_args = $vars;
-		if ($this->_source instanceof DB_query) {
+		if ($input instanceof DB_query) {
 			$this->_kind = "DB_query";
 			$stmnt = $this->_source->run($this->_args);
 			$this->hold_ct = $this->_source->ordered_param_ct();
  		}
-		if ($this->_source instanceof PDOStatement) {
+		if ($input instanceof PDOStatement) {
 			$this->_kind = "PDOStatement";
 			$stmnt = $this->_source;
 			$this->hold_ct = rm_parse_debugDump($stmnt)['numbered'];

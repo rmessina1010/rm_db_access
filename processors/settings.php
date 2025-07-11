@@ -24,3 +24,4 @@ define('ROOT_DIR', '/' . ROOT_OFFSET);
 define('FIX_REL',  ROOT_OFFSET  ? true : false);
 define('DOMAIN_DIR', DOMAIN . ROOT_DIR . '/');
 define('S_DOMAIN_DIR', SCHEME . DOMAIN_DIR);
+define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT']);

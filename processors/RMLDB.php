@@ -1,6 +1,6 @@
 <?
-require_once __DIR__.'/settings.php';
-require_once __DIR__.'/../includes/functions/core_foos.php';
+require_once 'settings.php';
+require_once ROOT_PATH.'/rm_db_access/includes/functions/core_foos.php';
 
 class  DB_hub
 {
