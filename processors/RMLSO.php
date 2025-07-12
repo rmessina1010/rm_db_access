@@ -76,8 +76,8 @@ function doQ($q, $data = null, $ret = false, $cnn = DBNAME, $cname = '_default')
 		$Q[0] = $q;
 	} else {
 		$Q = $q;
-	}														// initialize array of queries, $Q
-	$so = new  DB_query('', DB_hub::connect($cnn, $cname));   												//set up stament object
+	}																	// initialize array of queries, $Q
+	$so = new  DB_query($Q[0], DB_hub::connect($cnn, $cname));   			//set up stament object
 	//$dbh=$so->dbh();													//set up DB handle;
 	//if ($trns){$dbh->beginTransaction();}								//intitiale transaction IF requested by user;
 	$dataArray = is_array($data);
