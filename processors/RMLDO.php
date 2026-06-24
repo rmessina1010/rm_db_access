@@ -21,6 +21,7 @@ class RMLDO
 	protected $_indexKey 	= null;  	// added sept 2020
 	protected $hold_ct		= null;
 	protected $_args		= null;
+	protected $_def_filters	= array();	// addes jun 2026
 
 	protected $_keyMap		= array();
 	protected $_hlev		= 0;
@@ -181,7 +182,28 @@ class RMLDO
 	{
 		$this->_columns = $this->_theData ? array_keys($this->_theData[0]) : array();
 	}
+	
+	public function add_filter($col, $filter){
+		// check column  exists
+		// check $filter is array or string
+		// if string, create single  element array
+		// append array to to coresponding _def_filters key
+	}
 
+	public function remove_filter($col, $filter){
+		// check column  exists
+		// check $filter is array or string
+		// if string, create single  element array
+		// loop through unsets
+	}
+
+	public function set_filter($col, $filter){
+		// check column  exists
+		// check $filter is array or string
+		// if string, create single  element array
+		// set corresponding filter to generated array;
+	}
+	
 	protected function run_filters($value, $filt = array(), $filtArgs = array())
 	{
 		foreach ($filt as  $filtName) {
@@ -417,7 +439,7 @@ class RMLDO
 		$shortCode = isset($args['sc'])  ? $args['sc'] : null;
 		$echo = isset($args['ec']) && $args['ec'] ?   true : false;
 		$mapped = isset($args['map'])  ? $args['map'] : ($this->_keyMap ? false : true);
-		$filt = (isset($args['filt']) && isset($args['filt']))    ? $args['filt']  : array();
+		$filt = (isset($args['filt']) && isset($args['filt']))    ? $args['filt']  : array(); //todo set from defaults
 		$filtArgs = (isset($args['fArgs']) && isset($args['fArgs']))    ? $args['fArgs']  : array();
 		$bef = isset($args['bef']) ? $args['bef'] : $bef;
 		$aft = isset($args['aft']) ? $args['aft'] : $aft;
@@ -1018,6 +1040,11 @@ class RMLDO
 		$ROW = array();
 		foreach ($loopThrough as $col => $val) {
 			$col = $this->_keyMapCol($col, $map_to);
+			$filter = false;
+			if (isset($addTo[$col]['filt'])){
+				$filter =  is_array($addTo[$col]['filt']) ?  $addTo[$col]['filt']  : false; //todo get fefault filters
+			}
+
 			if (isset($this->_theData[$key][$col])) {
 				if (isset($addTo[$col]['false']) && $ROW[$col] === false) {
 					$ROW[$col] = $addTo[$col]['false'];
@@ -1035,7 +1062,7 @@ class RMLDO
 						$ROW[$col] =  $addTo[$col]['bef'] . $ROW[$col];
 					}
 				}
-				if (isset($addTo[$col]['filt']) && is_array($addTo[$col]['filt'])) {
+				if ($filter) {
 					$filtArgs = (isset($addTo[$col]['flta']) && is_array($addTo[$col]['flta'])) ? $addTo[$col]['flta'] : array();
 					$ROW[$col]  = $this->run_filters($ROW[$col], $addTo[$col]['filt'], $filtArgs);
 				}
