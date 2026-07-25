@@ -13,13 +13,14 @@
 	// get vals
 	
 	foreach ($matchers as $match => $conditions){
-		$types = is_string($conditions) ? $conditions : false;
 		$values = false;
-		$count = 0;
-		if (isset($conditions['ty'])){ $types = $conditions['ty']; }
-		if (isset($conditions['vl'])){ $values = $conditions['vl'];}
+		$types = is_string($conditions) ? $conditions : '';
+		if (is_array($conditions)){
+			if (isset($conditions['ty'])){ $types = $conditions['ty']; }
+			if (isset($conditions['vl']) && is_array($conditions['vl'])){ $values = $conditions['vl'];}
+		}
 		$types = preg_replace('/\s+/', '', $types);
-		if (strlen($types)>2){ $count = 1 + substr_count(',', $types); }
+		$count = (strlen($types)>2) + substr_count(',', $types); 
 		// check  all types match in order
 		if ($count != $arg_ct) {continue;}
 		if ($types &&  $types != $arg_ty) {continue;}
