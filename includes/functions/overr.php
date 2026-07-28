@@ -2,12 +2,12 @@
  // This is a utility to fascilitate function overloading in PHP
  // Best used in combination with func_get_args()
  
- function _overload( array $args, array $matchers, bool $return_all= false) {
+ function _overload( array $args, array $matchers, bool $return_part= false) {
 
-    $return_args = [];
-    $arg_ct =  count($arg);
-	$matched = false;
-	$arg_ty= implode(",", array_map('typeof', $args));
+    $return_args = $args;
+    $arg_ct  	 = count($arg);
+	$matched 	 = false;
+	$arg_ty		 = implode(",", array_map('typeof', $args));
 	
 	// get types
 	// get vals
@@ -21,10 +21,10 @@
 		}
 		$types = preg_replace('/\s+/', '', $types);
 		$count = (strlen($types)>2) + substr_count(',', $types); 
-		// check  all types match in order
+		// check  all types match and in order
 		if ($count != $arg_ct) {continue;}
 		if ($types &&  $types != $arg_ty) {continue;}
-		// check vals
+		// check values match
 		if ($values){
 			$k = 0;
 			foreach ($values as $v){
@@ -35,15 +35,15 @@
 		$matched =$match;
 	}
 	
-	if ($matched && !$return_all){
-		if (is_array($return_all)){
-			$k =0 ;
-			foreach ($return_all as $k){
+	if ($matched && $return_part){
+		if (is_array($return_part)){
+			$k = 0 ;
+			foreach ($return_part as $k){
 				$return_args[$k]= $args[$k];
 				$k++;
 			}
 		}else{
-			$return_args= array_slice($args, 0, $arg_ct);
+			$return_args = array_slice($args, 0, $arg_ct);
 		}
 	}
 
@@ -54,6 +54,6 @@
 
 }
 
-  _overload( array(false,"SQL GoES HERE", [1,2,3,4], array ("sql"=>array("ty"=>"boolean,string,array")))
+  _overload( array(false,"SQL GoES HERE", [1,2,3,4], array ("sql"=>array("ty"=>"boolean,string,array"))));
 
 ?>
