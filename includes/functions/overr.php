@@ -36,6 +36,7 @@
 	}
 	
 	if ($matched && $return_part){
+		$return_args= array();
 		if (is_array($return_part)){
 			$k = 0 ;
 			foreach ($return_part as $k){
@@ -54,6 +55,6 @@
 
 }
 
-  _overload( array(false,"SQL GoES HERE", [1,2,3,4], array ("sql"=>array("ty"=>"boolean,string,array"))));
+  _overload( array(false,"SQL GoES HERE", [1,2,3,4]), array ("sql"=>array("ty"=>"boolean,string,array")));
 
 ?>
