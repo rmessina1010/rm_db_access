@@ -5,9 +5,9 @@
  function _overload( array $args, array $matchers, bool $return_part= false) {
 
     $return_args = $args;
-    $arg_ct  	 = count($arg);
+    $arg_ct  	 = count($args);
 	$matched 	 = false;
-	$arg_ty		 = implode(",", array_map('typeof', $args));
+	$arg_ty		 = implode(",", array_map('gettype', $args));
 	
 	// get types
 	// get vals
@@ -55,6 +55,6 @@
 
 }
 
-  _overload( array(false,"SQL GoES HERE", [1,2,3,4]), array ("sql"=>array("ty"=>"boolean,string,array")));
-
-?>
+ var_dump( _overload( array(false,"SQL GoES HERE", [1,2,3,4]), array ("sql"=>array("ty"=>"boolean,string,array"))));
+ 
+ ?>
