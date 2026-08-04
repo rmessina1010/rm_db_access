@@ -2,13 +2,13 @@
  // This is a utility to fascilitate function overloading in PHP
  // Best used in combination with func_get_args()
  
- function _overload( array $args, array $matchers, bool $return_part= false) {
+ function _overload( array $args, array $matchers,  $return_part= false) {
 
     $return_args = $args;
     $arg_ct  	 = count($args);
 	$matched 	 = false;
 	$arg_ty		 = implode(",", array_map('gettype', $args));
-	
+	echo 	$arg_ty."<br>";
 	// get types
 	// get vals
 	
@@ -20,7 +20,10 @@
 			if (isset($conditions['vl']) && is_array($conditions['vl'])){ $values = $conditions['vl'];}
 		}
 		$types = preg_replace('/\s+/', '', $types);
-		$count = (strlen($types)>2) + substr_count(',', $types); 
+		echo $types."<br>";
+		$count = (strlen($types)>2) + substr_count( $types,','); 
+				echo "$count = $arg_ct<br>";
+
 		// check  all types match and in order
 		if ($count != $arg_ct) {continue;}
 		if ($types &&  $types != $arg_ty) {continue;}
@@ -37,10 +40,11 @@
 	
 	if ($matched && $return_part){
 		$return_args= array();
+		$temp = array_values($args);
 		if (is_array($return_part)){
 			$k = 0 ;
-			foreach ($return_part as $k){
-				$return_args[$k]= $args[$k];
+			foreach ($return_part as $kv){
+				$return_args[$kv]= $temp[$k];
 				$k++;
 			}
 		}else{
@@ -55,6 +59,10 @@
 
 }
 
- var_dump( _overload( array(false,"SQL GoES HERE", [1,2,3,4]), array ("sql"=>array("ty"=>"boolean,string,array"))));
- 
- ?>
+ var_dump( _overload( 
+ 	array(false,"SQL GoES HERE", [1,2,3,4]), 
+ 	array ("sql"=>array("ty"=>"boolean,string,array")),
+ 	array('arg1','arg2')
+ 	));
+
+?>
