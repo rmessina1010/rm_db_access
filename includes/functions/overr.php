@@ -58,11 +58,37 @@
 		];
 
 }
-
- var_dump( _overload( 
+ 
+var_dump( _overload( 
  	array(false,"SQL GoES HERE", [1,2,3,4]), 
  	array ("sql"=>array("ty"=>"boolean,string,array")),
  	array('arg1','arg2')
- 	));
+));
 
+
+var_dump( _overload( 
+	array(false,"SQL GoES HERE", [1,2,3,4]), 
+	array ("sql"=>array("ty"=>"boolean,string,array")),
+	array('arg1','arg2')
+));
+		
+var_dump( _overload( 
+	array(true,"SQL GoES HERE", [1,2,3,4]), 
+	array (
+		"sql"=>array("ty"=>"boolean,string,array"),
+		"nosql"=>array("ty"=>"boolean,string,array", "vl"=>[true])
+	),
+	array('arg1','arg2')
+));
+ 
+var_dump( _overload( 
+	array("more string","SQL GoES HERE", [1,2,3,4]), 
+	array (
+		"sql"=>array("ty"=>"boolean,string,array"),
+		"nosql"=>array("ty"=>"boolean,string,array", "vl"=>[true]),
+		"diff"=>array("ty"=>"string,string,array" ),
+	),
+	array('arg1','arg2')
+));
+			  
 ?>
