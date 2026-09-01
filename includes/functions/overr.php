@@ -1,6 +1,16 @@
 <?
  // This is a utility to fascilitate function overloading in PHP
  // Best used in combination with func_get_args()
+
+
+   /**
+   * @param {number} $args - an array of the arguments passed to the function in the order they are passed.
+   * @param {number} $matchers - a named (identifier) array of tuples, 
+   * 							 ty: comma separated string of types expected.
+   * 							 vl: expected values
+   * @param {array} $return_part - when this var is array, returns args as named in argument.
+   * returns [flag=> matched key from $matcher, args=> resolved arguments]
+   **/
  
  function _overload( array $args, array $matchers,  $return_part= false) {
 
