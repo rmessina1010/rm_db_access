@@ -53,8 +53,10 @@
 		$temp = array_values($args);
 		if (is_array($return_part)){
 			$k = 0 ;
+			$l = count($temp);
 			foreach ($return_part as $kv){
-				$return_args[$kv]= $temp[$k];
+				if ($k >= $l){ break ;}
+		 		$return_args[$kv]= $temp[$k];
 				$k++;
 			}
 		}else{
