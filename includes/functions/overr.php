@@ -99,8 +99,16 @@ var_dump( _overload(
 		"sql"=>array("ty"=>"boolean,string,array"),
 		"nosql"=>array("ty"=>"boolean,string,array", "vl"=>[true]),
 		"diff"=>array("ty"=>"string,string,array" ),
+	)
+));
+
+var_dump( _overload( 
+	array(true,"SQL GoES HERE", [1,2,3,4]), 
+	array (
+		"sql"=>array("ty"=>"boolean,string,array"),
+		"nosql"=>array("ty"=>"boolean,string,array", "vl"=>[true])
 	),
-	array('arg1','arg2')
+	array('bool','string1','string2', 'nono')
 ));
 			  
 ?>
