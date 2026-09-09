@@ -208,3 +208,56 @@ function rm_whitelist(array $arr, array $allowed, $def = false)
 {
 	return $def  ?  	array_intersect_key($arr, array_flip($allowed)) : array_intersect_key($arr,  $allowed) + $allowed;
 }
+
+
+function _overload( array $args, array $matchers,  $return_part= false) {
+
+    $return_args = $args;
+    $arg_ct  	 = count($args);
+	$matched 	 = false;
+	$arg_ty		 = implode(",", array_map('gettype', $args));
+	// get types
+	// get vals
+	foreach ($matchers as $match => $conditions){
+		$values = false;
+		$types = is_string($conditions) ? $conditions : '';
+		if (is_array($conditions)){
+			if (isset($conditions['ty'])){ $types = $conditions['ty']; }
+			if (isset($conditions['vl']) && is_array($conditions['vl'])){ $values = $conditions['vl'];}
+		}
+		$types = preg_replace('/\s+/', '', $types);
+		$count = (strlen($types)>2) + substr_count( $types,','); 
+		if ($count != $arg_ct) {continue;}
+		if ($types &&  $types != $arg_ty) {continue;}
+		// check values match
+		if ($values){
+			$k = 0;
+			foreach ($values as $v){
+				if ((is_array($v) && !in_array($args[$k], $v)) || $args[$k] !== $v){ continue 2;}
+				$k++;
+			}
+		}
+		$matched =$match;
+	}
+	
+	if ($matched && $return_part){
+		$return_args= array();
+		$temp = array_values($args);
+		if (is_array($return_part)){
+			$k = 0 ;
+			$l = count($temp);
+			foreach ($return_part as $kv){
+				if ($k >= $l){ break ;}
+		 		$return_args[$kv]= $temp[$k];
+				$k++;
+			}
+		}else{
+			$return_args = array_slice($args, 0, $arg_ct);
+		}
+	}
+
+	return [
+		'flag' => $matched,
+		'args' => $return_args,
+		];
+}
