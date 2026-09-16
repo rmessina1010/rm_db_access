@@ -216,8 +216,6 @@ function _overload( array $args, array $matchers,  $return_part= false) {
     $arg_ct  	 = count($args);
 	$matched 	 = false;
 	$arg_ty		 = implode(",", array_map('gettype', $args));
-	// get types
-	// get vals
 	foreach ($matchers as $match => $conditions){
 		$values = false;
 		$types = is_string($conditions) ? $conditions : '';
@@ -229,7 +227,6 @@ function _overload( array $args, array $matchers,  $return_part= false) {
 		$count = (strlen($types)>2) + substr_count( $types,','); 
 		if ($count != $arg_ct) {continue;}
 		if ($types &&  $types != $arg_ty) {continue;}
-		// check values match
 		if ($values){
 			$k = 0;
 			foreach ($values as $v){
