@@ -6,8 +6,8 @@
 
 	$db = new DB("SAMPLE_DB","user" ,"pass" );
 	if($db){
-	  	$qry_str 	="SELECT * FROM Categories WHERE CatOrd = :ord AND Parent = :pid" ;
-	  	$qry_str2 	="SELECT * FROM Entries WHERE   Category = :pid" ;
+	  	$qry_str 	= "SELECT * FROM Categories WHERE CatOrd = :ord AND Parent = :pid" ;
+	  	$qry_str2 	= "SELECT * FROM Entries WHERE   Category = :pid" ;
 		$cat_list 	= new DB_query($qry_str,$db->connect());
 		$cat_list2 	= new DB_query($qry_str2,$db->connect());
 		$ord=0;

@@ -5,10 +5,11 @@ ini_set("mysql.connect_timeout", 1200);
 ini_set("default_socket_timeout", 1200);
 
 define('DB_TYP_DEF', 'mysql');        //Default DB type.. new as of 5.0
-define('DBNAME', 'dbname');
-define('HOST', 'localhost');
-define('UPASS', 'userpassword');
-define('UACC', 'username');
+
+define('DBNAME', getenv('DBNAME') ?: 'dbname');
+define('HOST',   getenv('HOST') ?: 'localhost');
+define('UPASS',  getenv('UPASS') ?: 'userpassword');
+define('UACC',   getenv('UPASS') ?: 'username');
 
 define('APPLY_SC', false);
 define('ADMIN_MAIL', 'email@email.com'); // Your Email address
