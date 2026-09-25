@@ -1,6 +1,6 @@
  <?
-   include( 'processors/RMLDO.php');
-   require_once ( 'processors/RMLDB.php');
+   include( 'RMDO/processors/RMLDO.php');
+   require_once ( 'RMDO/processors/RMLDB.php');
    echo 'MMMMM!!!<HR>';
    $test = new RMLDO('SELECT * FROM `GLists` WHERE `GLID` = :?  AND `GLOwner` = :?', array('vars' => array(1, 1)));
    $datax[] = array('x' => 1, 'y' => true, 'z' => 'some string', 'a' => array(1, 2, 3));

@@ -1,4 +1,4 @@
-
+<?
  if($h=DB_hub::store(new DB("RMCMS","root" ,"root" ))){
   	$qry_str 	="SELECT * FROM Categories WHERE CatOrd = :ord AND Parent = :pid" ;
   	$qry_str2 	="SELECT * FROM Entries WHERE   Category = :pid" ;
@@ -19,3 +19,4 @@
  echo sql_str('r','some_table', array('w'=>'`x`= 2', 'l'=>2, 'c'=>array('col1'=>1,'id_col'=>2,'attrib'=>3,'main'=>4) , 'v'=>true, 'j'=>'a_table ON y=x') );
  
 	echo sql_R_str('my_table','*',null,'col1 DESC',5);
+?>
