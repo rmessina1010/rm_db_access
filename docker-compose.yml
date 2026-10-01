@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+    volumes:
+      - rmcms:/var/lib/mysql
+  phpmyadmin:
+    build: .
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+      - TABLE=${TABLE}
+      - FIELD=${FIELD}
+    depends_on:
+      - db
+volumes:
+  rmcms:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/db
