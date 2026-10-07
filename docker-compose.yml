@@ -19,6 +19,10 @@ services:
       - PMA_ARBITRARY=1
       - TABLE=${TABLE}
       - FIELD=${FIELD}
+      - DBNAME=${DBNAME}
+      - HOST=${HOST}
+      - UPASS=${UPASS}
+      - UACC=${UACC}
     depends_on:
       - db
 volumes:
