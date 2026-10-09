@@ -17,8 +17,6 @@ services:
       - PMA_HOST=db
       - PMA_PORT=3306
       - PMA_ARBITRARY=1
-      - TABLE=${TABLE}
-      - FIELD=${FIELD}
       - DBNAME=${DBNAME}
       - HOST=${HOST}
       - UPASS=${UPASS}
