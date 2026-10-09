@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.2'
 
 services:
   db:
@@ -8,19 +8,29 @@ services:
       MYSQL_ROOT_PASSWORD: pass
     volumes:
       - rmcms:/var/lib/mysql
-  phpmyadmin:
+
+  webapp:
     build: .
     restart: always
     ports:
-      - 80:80
+      - "80:80"
+    environment:
+      - DBNAME=${DBNAME}
+      - HOST=db
+      - UPASS=${UPASS}
+      - UACC=${UACC}
+    depends_on:
+      - db
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
       - PMA_ARBITRARY=1
-      - DBNAME=${DBNAME}
-      - HOST=${HOST}
-      - UPASS=${UPASS}
-      - UACC=${UACC}
     depends_on:
       - db
 volumes:
