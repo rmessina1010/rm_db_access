@@ -6,8 +6,11 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: ${DBNAME} # Creates the database automatically on first run
     volumes:
       - rmcms:/var/lib/mysql
+      #  Maps local script to the container's entrypoint initialization directory
+      - ./rmessina_RMCMS.sql:/docker-entrypoint-initdb.d/init.sql
 
   webapp:
     build: .
