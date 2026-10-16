@@ -9,7 +9,7 @@ define('DB_TYP_DEF', 'mysql');        //Default DB type.. new as of 5.0
 define('DBNAME', getenv('DBNAME') ?: 'dbname');
 define('HOST',   getenv('HOST') ?: 'localhost');
 define('UPASS',  getenv('UPASS') ?: 'userpassword');
-define('UACC',   getenv('UPASS') ?: 'username');
+define('UACC',   getenv('UACC') ? : 'username');
 
 define('APPLY_SC', false);
 define('ADMIN_MAIL', 'email@email.com'); // Your Email address
