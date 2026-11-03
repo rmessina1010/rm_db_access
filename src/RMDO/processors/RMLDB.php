@@ -55,6 +55,7 @@ class  DB_hub
 		}
 	}
 }
+
 class DB
 {
 
@@ -140,7 +141,6 @@ class DB
 		return $this;
 	}
 }
-
 
 class DB_query
 {
