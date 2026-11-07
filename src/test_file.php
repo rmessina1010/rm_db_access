@@ -10,9 +10,8 @@
    
    $DB = new DB(DBNAME, UACC,  UPASS,  HOST);
    $DB = $DB->connect();
-   $DBQ = new DB_query('SELECT * FROM `GLists` WHERE `GLID` = :?  AND `GLOwner` = :?', $DB);
+   $DBQ = new DB_query('SELECT * FROM `GLists` WHERE `GLID` = :?  AND `GLOwner` = :?', $DB); // return a statement;
    // $DBQ->run( array(1, 1));
-   // $test4 = new RMLDO($DBQ, array('vars' => array(2, 1)));
    $test4 = new RMLDO($DBQ, array('vars' => array(2, 1)));
    $test5 = new RMLDO($DBQ, array('vars' => array(1, 1)));
    $test4->refresh();
